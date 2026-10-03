@@ -53,16 +53,28 @@ private fun texFor(clef: Clef, notes: List<StaffNote>): String {
     return "\\instrument 0 \\clef $clefName . $body"
 }
 
-/** Conteneur qui intercepte les taps (les ScrollViews internes d'alphaTab ne les consomment pas). */
+/** Conteneur qui intercepte les taps et diffère le rendu initial jusqu'au premier layout. */
 @SuppressLint("ClickableViewAccessibility")
 private class TapInterceptor(context: Context) : FrameLayout(context) {
     var onTap: ((Float, Float) -> Unit)? = null
     var lastTex: String? = null
+    var renderWhenLaidOut: ((AlphaTabView) -> Unit)? = null
+    private var laidOut = false
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (ev.actionMasked == MotionEvent.ACTION_UP && ev.eventTime - ev.downTime < 600L) {
             onTap?.invoke(ev.x, ev.y)
         }
         return true
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        if (!laidOut && width > 0) {
+            laidOut = true
+            val child = getChildAt(0) as? AlphaTabView
+            if (child != null) renderWhenLaidOut?.invoke(child)
+        }
     }
 }
 
@@ -120,7 +132,13 @@ fun StaffView(
             view.api.updateSettings()
             if (tapInterceptor.lastTex != tex) {
                 tapInterceptor.lastTex = tex
-                view.api.tex(tex)
+                if (view.width > 0) {
+                    // vue déjà mesurée : rendu direct
+                    view.api.tex(tex)
+                } else {
+                    // vue pas encore laid out : rendre sinon alphaTab rendrait avec une largeur nulle (cadre vide)
+                    tapInterceptor.renderWhenLaidOut = { it.api.tex(tex) }
+                }
             }
             tapInterceptor.onTap = onStaffTap?.let { callback ->
                 { x: Float, y: Float ->
