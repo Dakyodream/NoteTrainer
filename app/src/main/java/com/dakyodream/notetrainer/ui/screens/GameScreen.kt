@@ -1,45 +1,31 @@
 package com.dakyodream.notetrainer.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dakyodream.notetrainer.R
 import com.dakyodream.notetrainer.core.AudioPlayer
 import com.dakyodream.notetrainer.core.GameEngine
 import com.dakyodream.notetrainer.core.GameMode
 import com.dakyodream.notetrainer.core.Note
 import com.dakyodream.notetrainer.core.Notes
-import com.dakyodream.notetrainer.core.Clef
+import com.dakyodream.notetrainer.core.Notation
 import com.dakyodream.notetrainer.ui.StaffNote
+import com.dakyodream.notetrainer.ui.StaffHitResult
 import com.dakyodream.notetrainer.ui.StaffView
+import com.dakyodream.notetrainer.ui.staffInkColor
 import kotlinx.coroutines.delay
 
 @Composable
@@ -68,9 +54,12 @@ fun GameScreen(
         if (state.isGameOver) showGameOver = true
     }
 
-    fun noteFromTap(step: Float): Note? {
-        val midi = stepToMidi(step, state.clef)
-        return Notes.fromMidiSimple(midi)
+    val ink = staffInkColor()
+
+    fun onStaffTap(hit: StaffHitResult) {
+        val midi = Notes.stepToMidi(hit.step, state.clef) + selectedAccidental
+        val note = Notes.fromMidi(midi, preferSharps = selectedAccidental >= 0)
+        engine.checkAnswerPlace(note)
     }
 
     Column(
@@ -81,41 +70,30 @@ fun GameScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatusRow(state.score, state.lives, state.round, state.difficulty.rounds, onExit)
+        StatusRow(
+            lives = state.lives,
+            round = state.round,
+            totalRounds = if (mode == GameMode.EAR_TRAINING) state.sequence.size else state.difficulty.rounds,
+            score = state.score,
+            onExit = onExit
+        )
 
         when (mode) {
-            GameMode.NAME_THE_NOTE -> NameModeContent(
-                engine = engine,
-                state = state
-            )
-            GameMode.PLACE_THE_NOTE -> PlaceModeContent(
-                engine = engine,
-                state = state,
-                selectedAccidental = selectedAccidental,
-                onSelectAccidental = { selectedAccidental = it },
-                onStaffTap = { step ->
-                    val n = noteFromTap(step)
-                    if (n != null) engine.checkAnswerPlace(n)
-                }
-            )
-            GameMode.EAR_TRAINING -> EarModeContent(
-                engine = engine,
-                state = state,
-                audio = audio,
-                onStaffTap = { step ->
-                    val n = noteFromTap(step)
-                    if (n != null) engine.checkAnswerPlace(n)
-                }
-            )
+            GameMode.NAME_THE_NOTE -> NameModeContent(engine, state, ink)
+            GameMode.PLACE_THE_NOTE -> PlaceModeContent(engine, state, ink, selectedAccidental, { selectedAccidental = it }, ::onStaffTap)
+            GameMode.EAR_TRAINING -> EarModeContent(engine, state, audio, ink, ::onStaffTap)
         }
 
-        if (state.feedback.isNotEmpty()) {
+        state.feedbackRes?.let { res ->
             Text(
-                text = state.feedback,
+                text = if (state.feedbackExtra.isNotEmpty())
+                    stringResource(res, state.feedbackExtra)
+                else stringResource(res),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Center
             )
         }
 
@@ -124,74 +102,91 @@ fun GameScreen(
             enabled = state.isCorrect != null && !state.isGameOver,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Note suivante")
+            Text(stringResource(R.string.next_note))
         }
     }
 
     if (showGameOver) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("Partie terminée !") },
+            title = { Text(stringResource(R.string.game_over)) },
             text = {
-                Text("Score : ${state.score}\nMeilleur score : ${state.highScore}\n" +
-                        if (state.mode == GameMode.EAR_TRAINING) "Séquence retenue : ${state.sequenceIndex}/${state.sequence.size}" else "")
+                Column {
+                    Text(stringResource(R.string.final_score, state.score))
+                    Text(stringResource(R.string.best_score, state.highScore))
+                    if (state.mode == GameMode.EAR_TRAINING) {
+                        Text(stringResource(R.string.sequence_progress, state.sequenceIndex, state.sequence.size))
+                    }
+                }
             },
             confirmButton = {
                 TextButton(onClick = {
                     showGameOver = false
-                    engine.startGame(state.mode, state.difficulty, state.clef)
-                }) { Text("Rejouer") }
+                    engine.startGame(state.mode, state.difficulty, state.clef, state.notation)
+                }) { Text(stringResource(R.string.replay)) }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showGameOver = false
-                    onExit()
-                }) { Text("Menu") }
+                TextButton(onClick = { showGameOver = false; onExit() }) { Text(stringResource(R.string.menu)) }
             }
         )
     }
 }
 
 @Composable
-private fun StatusRow(score: Int, lives: Int, round: Int, totalRounds: Int, onExit: () -> Unit) {
+private fun StatusRow(lives: Int, round: Int, totalRounds: Int, score: Int, onExit: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("❤️ $lives", fontSize = 18.sp)
-        Text("Manche $round/$totalRounds", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-        Text("⭐ $score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        OutlinedButton(onClick = onExit) { Text("Quitter") }
+        Text(stringResource(R.string.lives, lives), fontSize = 18.sp)
+        Text(stringResource(R.string.round, round, totalRounds), fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.score, score), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        OutlinedButton(onClick = onExit) { Text(stringResource(R.string.quit)) }
     }
 }
 
 @Composable
-private fun NameModeContent(engine: GameEngine, state: com.dakyodream.notetrainer.core.GameState) {
+private fun NameModeContent(
+    engine: GameEngine,
+    state: com.dakyodream.notetrainer.core.GameState,
+    ink: Color
+) {
     val target = state.targetNote ?: return
     StaffView(
         clef = state.clef,
-        notes = listOf(StaffNote(target, showLabel = false)),
-        modifier = Modifier.fillMaxWidth()
+        notes = listOf(StaffNote(target, color = ink)),
+        noteColor = ink,
+        staffColor = ink
     )
-    val options = buildList {
-        add(target.letter)
-        Notes.LETTERS.filter { it != target.letter }.shuffled().take(2).forEach { add(it) }
-    }.shuffled()
-    Column(
+    Text(
+        stringResource(R.string.mode_name_prompt),
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Medium,
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text("Quel est le nom de cette note ?", fontSize = 18.sp, fontWeight = FontWeight.Medium)
-        options.forEach { letter ->
-            Button(
-                onClick = { engine.checkAnswerName(letter) },
-                enabled = state.isCorrect == null,
-                modifier = Modifier.fillMaxWidth(0.7f)
-            ) {
-                Text("$letter${if (target.accidental == 1) "♯" else if (target.accidental == -1) "♭" else ""}", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        textAlign = TextAlign.Center
+    )
+    // Les 7 noms de notes, disposés en grille
+    Notes.LETTERS.chunked(4).forEach { rowLetters ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            rowLetters.forEach { letter ->
+                Button(
+                    onClick = { engine.checkAnswerName(letter) },
+                    enabled = state.isCorrect == null,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        Notes.noteName(letter, state.notation) +
+                                if (target.accidental != 0) Notes.accidentalSymbol(target.accidental) else "",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+            if (rowLetters.size < 4) Spacer(Modifier.weight(4 - rowLetters.size.toFloat()))
         }
     }
 }
@@ -200,13 +195,17 @@ private fun NameModeContent(engine: GameEngine, state: com.dakyodream.notetraine
 private fun PlaceModeContent(
     engine: GameEngine,
     state: com.dakyodream.notetrainer.core.GameState,
+    ink: Color,
     selectedAccidental: Int,
     onSelectAccidental: (Int) -> Unit,
-    onStaffTap: (Float) -> Unit
+    onStaffTap: (StaffHitResult) -> Unit
 ) {
     val target = state.targetNote ?: return
     Text(
-        "Placez la note : ${target.letter}${if (target.accidental == 1) "♯" else if (target.accidental == -1) "♭" else ""} ${target.octave}",
+        stringResource(
+            R.string.mode_place_prompt,
+            Notes.noteName(target, state.notation) + " (${target.octave})"
+        ),
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.fillMaxWidth(),
@@ -220,16 +219,17 @@ private fun PlaceModeContent(
             OutlinedButton(
                 onClick = { onSelectAccidental(acc) },
                 colors = if (selectedAccidental == acc)
-                    androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ) else androidx.compose.material3.ButtonDefaults.outlinedButtonColors()
+                    ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primary)
+                else ButtonDefaults.outlinedButtonColors()
             ) { Text(sym, fontSize = 20.sp) }
         }
     }
     StaffView(
         clef = state.clef,
         notes = emptyList(),
-        onStepTap = { step -> onStaffTap(step + selectedAccidental * 0.5f) }
+        noteColor = ink,
+        staffColor = ink,
+        onStaffTap = onStaffTap
     )
 }
 
@@ -238,19 +238,23 @@ private fun EarModeContent(
     engine: GameEngine,
     state: com.dakyodream.notetrainer.core.GameState,
     audio: AudioPlayer,
-    onStaffTap: (Float) -> Unit
+    ink: Color,
+    onStaffTap: (StaffHitResult) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Écoutez puis placez la note", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(stringResource(R.string.mode_ear_prompt), fontSize = 18.sp, fontWeight = FontWeight.Medium)
             Button(
                 onClick = { state.targetNote?.let { audio.playNote(it, 1.0) } },
                 enabled = state.targetNote != null
             ) {
-                Text("🔊 Réécouter", fontSize = 18.sp)
+                Text(stringResource(R.string.mode_ear_listen), fontSize = 18.sp)
             }
             Text(
-                "Note ${state.sequenceIndex + 1}/${state.sequence.size} de la séquence",
+                stringResource(R.string.sequence_progress, state.sequenceIndex + 1, state.sequence.size),
                 fontSize = 14.sp, color = MaterialTheme.colorScheme.primary
             )
         }
@@ -258,6 +262,8 @@ private fun EarModeContent(
     StaffView(
         clef = state.clef,
         notes = emptyList(),
-        onStepTap = onStaffTap
+        noteColor = ink,
+        staffColor = ink,
+        onStaffTap = onStaffTap
     )
 }

@@ -5,6 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,7 +17,9 @@ import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Difficulty
 import com.dakyodream.notetrainer.core.GameEngine
 import com.dakyodream.notetrainer.core.GameMode
+import com.dakyodream.notetrainer.core.Notation
 import com.dakyodream.notetrainer.ui.NoteTrainerTheme
+import com.dakyodream.notetrainer.ui.ThemeMode
 import com.dakyodream.notetrainer.ui.screens.CreditsScreen
 import com.dakyodream.notetrainer.ui.screens.GameScreen
 import com.dakyodream.notetrainer.ui.screens.InfoScreen
@@ -24,23 +31,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NoteTrainerTheme {
-                NoteTrainerApp()
+            val themeMode by rememberSaveable { mutableStateOf(ThemeMode.SYSTEM) }
+            NoteTrainerTheme(themeMode = themeMode) {
+                NoteTrainerApp(themeMode = themeMode, onThemeChange = { themeMode = it })
             }
         }
     }
 }
 
 @Composable
-fun NoteTrainerApp() {
+fun NoteTrainerApp(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
     val nav = rememberNavController()
-    val engine: GameEngine = androidx.lifecycle.viewmodel.compose.viewModel()
+    val engine: GameEngine = viewModel()
+    var notation by rememberSaveable { mutableStateOf(Notation.FRENCH) }
 
     NavHost(navController = nav, startDestination = "menu") {
         composable("menu") {
             MenuScreen(
-                onStartGame = { mode, difficulty, clef ->
-                    engine.startGame(mode, difficulty, clef)
+                themeMode = themeMode,
+                onThemeChange = onThemeChange,
+                notation = notation,
+                onNotationChange = { notation = it },
+                onStartGame = { mode, difficulty, clef, n ->
+                    engine.startGame(mode, difficulty, clef, n)
                     nav.navigate("game/${mode.name}")
                 },
                 onShowCredits = { nav.navigate("credits") },

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NoteTrainer</string>
+
+    <string name="notation_fr">♩ - fr</string>
+    <string name="notation_en">♩ - en</string>
+    <string name="notation_title">Notation</string>
+
+    <string name="theme_title">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+
+    <string name="mode_title_games">Game mode</string>
+    <string name="mode_name">♩ ➜ A</string>
+    <string name="mode_name_desc">A note appears on the staff, find its name.</string>
+    <string name="mode_place">A ➜ ♩</string>
+    <string name="mode_place_desc">A note name is shown, place it on the staff.</string>
+    <string name="mode_ear">🔊 ➜ A</string>
+    <string name="mode_ear_desc">Listen to the sound and place the note on the staff.</string>
+
+    <string name="diff_easy">Easy</string>
+    <string name="diff_medium">Medium</string>
+    <string name="diff_hard">Hard</string>
+    <string name="diff_expert">Expert</string>
+    <string name="diff_title">Difficulty</string>
+    <string name="diff_easy_desc">No sharps/flats, 10 rounds</string>
+    <string name="diff_medium_desc">Sharps/flats possible, 10 rounds</string>
+    <string name="diff_hard_desc">12 rounds, longer sequences</string>
+    <string name="diff_expert_desc">12 fast rounds, everything allowed</string>
+
+    <string name="clef_title">Clef</string>
+    <string name="clef_sol">Treble clef</string>
+    <string name="clef_fa">Bass clef</string>
+
+    <string name="play">▶ Play</string>
+    <string name="quit">Quit</string>
+    <string name="lives">❤️ %1$d</string>
+    <string name="round">Round %1$d/%2$d</string>
+    <string name="score">⭐ %1$d</string>
+    <string name="next_note">Next note</string>
+    <string name="listen_again">🔊 Listen again</string>
+    <string name="game_over">Game over!</string>
+    <string name="replay">Play again</string>
+    <string name="menu">Menu</string>
+    <string name="final_score">Score: %1$d</string>
+    <string name="best_score">Best score: %1$d</string>
+    <string name="sequence_progress">Sequence: %1$d/%2$d</string>
+    <string name="feedback_correct">✅ Well done!</string>
+    <string name="feedback_wrong">❌ Too bad, it was %1$s</string>
+    <string name="mode_name_prompt">What is the name of this note?</string>
+    <string name="mode_place_prompt">Place the note: %1$s</string>
+    <string name="mode_ear_prompt">Listen then place the note</string>
+    <string name="mode_ear_listen">🔊 Listen again</string>
+
+    <string name="help">ℹ️ Help</string>
+    <string name="credits">👤 Credits</string>
+    <string name="license">⚖️ License</string>
+    <string name="back">← Back to menu</string>
+
+    <string name="help_body">Three game modes, Simon-style, to memorize the notes.\n\n1. ♩ ➜ A: a note appears on the staff (treble or bass clef). Tap the button with its name.\n\n2. A ➜ ♩: the note name and octave are shown. Pick the accidental (♭ ♮ ♯) then tap the right position on the staff.\n\n3. 🔊 ➜ A: the game plays a sequence of notes. Listen, replay if needed, and place each note in order.\n\nRange: from 4 notes below the first line to 4 notes above the last line of the staff.\n\nTip: in treble clef, lines from bottom to top are E G B D F, and spaces are F A C E.</string>
+
+    <string name="credits_body">NoteTrainer — version 1.0.0\n\nFree and open source project, published under the MIT license.\n\nTechnologies:\n• Kotlin + Jetpack Compose (Material 3)\n• Locally synthesized sounds\n• Staff rendering inspired by LilyPond (lilypond.org)\n\nThanks for playing, contributing and sharing!</string>
+</resources>
