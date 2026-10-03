@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dakyodream.notetrainer.core.AudioPlayer
@@ -208,11 +209,12 @@ private fun PlaceModeContent(
         "Placez la note : ${target.letter}${if (target.accidental == 1) "♯" else if (target.accidental == -1) "♭" else ""} ${target.octave}",
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.align(Alignment.CenterHorizontally)
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center
     )
     Row(
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
     ) {
         listOf(-1 to "♭", 0 to "♮", 1 to "♯").forEach { (acc, sym) ->
             OutlinedButton(

@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
  * vers le numéro MIDI correspondant, selon la clé.
  * Ligne du haut : F5 en clé de Sol, A3 en clé de Fa.
  */
-fun stepToMidi(step: Float, clef: Clef): Int? {
+fun stepToMidi(step: Float, clef: Clef): Int {
     val topLine = when (clef) {
         Clef.TREBLE -> 3 + 5 * 7  // F5
         Clef.BASS -> 5 + 3 * 7   // A3

@@ -65,7 +65,7 @@ class AudioPlayer(context: Context) {
         soundPool.release()
     }
 
-    private fun synthesizeAndLoad(note: Note, durationSec: Double): Int? =
+    private suspend fun synthesizeAndLoad(note: Note, durationSec: Double): Int? =
         withContext(Dispatchers.IO) {
             try {
                 val freq = Notes.frequency(note)
