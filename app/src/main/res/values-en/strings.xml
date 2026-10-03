@@ -70,5 +70,5 @@
 
     <string name="help_body">Three game modes, Simon-style, to memorize the notes.\n\n1. ♩ ➜ A: a note appears on the staff (treble or bass clef). Tap the button with its name.\n\n2. A ➜ ♩: the note name and octave are shown. Pick the accidental (♭ ♮ ♯) then tap the right position on the staff.\n\n3. 🔊 ➜ A: the game plays a sequence of notes. Listen, replay if needed, and place each note in order.\n\nRange: from 4 notes below the first line to 4 notes above the last line of the staff.\n\nTip: in treble clef, lines from bottom to top are E G B D F, and spaces are F A C E.</string>
 
-    <string name="credits_body">NoteTrainer — version 1.1.0\n\nFree and open source project, published under the MIT license.\n\nTechnologies:\n• Kotlin + Jetpack Compose (Material 3)\n• Locally synthesized sounds\n• Staff drawn with Canvas, style inspired by LilyPond (lilypond.org)\n\nThanks for playing, contributing and sharing!</string>
+    <string name="credits_body">NoteTrainer — version 1.1.0\n\nFree and open source project, published under the MIT license.\n\nTechnologies:\n• Kotlin + Jetpack Compose (Material 3)\n• Locally synthesized sounds\n• Music notation rendered by alphaTab (alphatab.net), Bravura font — MPL-2.0 license\n\nThanks for playing, contributing and sharing!</string>
 </resources>
