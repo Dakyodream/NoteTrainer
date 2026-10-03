@@ -114,6 +114,15 @@ fun StaffView(
                 settings.core.engine = "android"
                 settings.display.scale = 1.3
             }
+            alphaTabView.api.error.on { e ->
+                android.util.Log.e("NoteTrainer.Staff", "alphaTab error: ${e.message}", e)
+            }
+            alphaTabView.api.renderFinished.on { r ->
+                android.util.Log.d(
+                    "NoteTrainer.Staff",
+                    "renderFinished ${r.width}x${r.height} total=${r.totalWidth}x${r.totalHeight}"
+                )
+            }
             addChildOnce(tapInterceptor, alphaTabView)
             tapInterceptor
         },
