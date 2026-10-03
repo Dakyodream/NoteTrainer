@@ -1,7 +1,8 @@
+@file:OptIn(kotlin.contracts.ExperimentalContracts::class, ExperimentalUnsignedTypes::class)
+
 package com.dakyodream.notetrainer.ui
 
 import alphaTab.AlphaTabView
-import alphaTab.Environment
 import alphaTab.PlayerMode
 import alphaTab.model.Color as AlphaColor
 import android.annotation.SuppressLint
@@ -21,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Note
-import kotlin.contracts.ExperimentalContracts
 import kotlin.math.roundToInt
 
 /**
@@ -66,7 +66,6 @@ private class TapInterceptor(context: Context) : FrameLayout(context) {
     }
 }
 
-@OptIn(ExperimentalContracts::class, ExperimentalUnsignedTypes::class)
 @Composable
 fun StaffView(
     clef: Clef,
@@ -78,7 +77,8 @@ fun StaffView(
     val argb = inkColor.toArgb()
     val backgroundArgb = Color(0x00000000).toArgb()
     val tex = remember(clef, notes) { texFor(clef, notes) }
-    val tapInterceptor = remember { TapInterceptor(LocalContext.current).apply {
+    val context = LocalContext.current
+    val tapInterceptor = remember { TapInterceptor(context).apply {
         layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
@@ -159,7 +159,7 @@ private fun findVerticalScroll(view: android.view.ViewGroup): android.widget.Scr
  * lignes de la portée rendue (boundsLookup). step 0 = ligne du haut.
  */
 private fun hitToStep(view: AlphaTabView, x: Float, y: Float): Int? {
-    val dpi = Environment.HighDpiFactor
+    val dpi = view.context.resources.displayMetrics.density.toDouble()
     if (dpi <= 0) return null
     val scrollY = findVerticalScroll(view)?.scrollY ?: 0
     val ly = (y + scrollY) / dpi
