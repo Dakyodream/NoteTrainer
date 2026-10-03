@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import com.dakyodream.notetrainer.core.Notation
 import com.dakyodream.notetrainer.core.Notes
 import com.dakyodream.notetrainer.ui.ThemeMode
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuScreen(
     themeMode: ThemeMode,

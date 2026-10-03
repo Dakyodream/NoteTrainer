@@ -24,6 +24,7 @@ private enum class StatsPeriod(@JvmField val days: Int) {
     WEEK(7), MONTH(30), ALL(Int.MAX_VALUE)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(notation: Notation, onBack: () -> Unit) {
     val context = LocalContext.current
