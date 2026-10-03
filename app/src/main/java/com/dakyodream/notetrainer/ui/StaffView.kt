@@ -67,8 +67,10 @@ private fun Note.texName(): String =
 private fun texFor(clef: Clef, notes: List<StaffNote>): String {
     val clefName = if (clef == Clef.TREBLE) "treble" else "bass"
     val body = if (notes.isEmpty()) "r" else notes.joinToString(" ") { it.note.texName() }
-    // instrument 0 (piano) : la piste guitare par défaut afficherait une tablature
-    return "\\instrument 0 \\clef $clefName . $body"
+    // En 1.6.1 : \instrument = staff meta (AVANT le '.'), \clef = bar meta
+    // (APRES le '.') — les inverser déclenche "Error on block metaDataTags".
+    // instrument 0 (piano) : la piste guitare par défaut afficherait une tablature.
+    return "\\instrument 0 . \\clef $clefName $body"
 }
 
 private class RenderOutput(
@@ -89,6 +91,16 @@ private fun ensurePlatform(context: Context) {
 private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
     val empty = RenderOutput(null, -1f, -1f)
     if (widthPx <= 0 || density <= 0) return empty
+    return try {
+        renderScoreInternal(tex, widthPx, argb, density)
+    } catch (e: Exception) {
+        android.util.Log.e("NoteTrainer.Staff", "alphaTab render failed: ${e.message}", e)
+        empty
+    }
+}
+
+private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
+    val empty = RenderOutput(null, -1f, -1f)
     val settings = Settings().apply {
         core.engine = "android"
         // Sans ceci, les tranches sont "lazy" et ne sont jamais rendues hors

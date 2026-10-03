@@ -96,8 +96,11 @@ directement des Bitmaps Android affichées dans un `Image()` Compose (pas de
    jamais rendre avec largeur 0 (sinon cadre vide).
 6. **Contenu AlphaTex** : `\instrument 0` obligatoire (instrument par défaut = 25
    guitare → alphaTab afficherait une tablature en plus de la portée).
-   Format : `\instrument 0 \clef treble . c4` (clé : `treble`/`bass` ; silence : `r` ;
-   altérations : `#`/`b` collés à la lettre ; octave = octave scientifique : `c4` = do3).
+   **Ordre 1.6.1** : `\instrument` = staff meta → AVANT le `.` ; `\clef` = bar meta
+   → APRÈS le `.`. Format : `\instrument 0 . \clef treble c4` (clé :
+   `treble`/`bass` ; silence : `r` ; altérations : `#`/`b` collés à la lettre ;
+   octave = octave scientifique : `c4` = do3). Inverser l'ordre déclenche
+   "Error on block metaDataTags" (crash UnsupportedFormatError).
    En 1.6.x le `/` de durée n'existe pas (c'est un commentaire), la durée se met
    après `:` (inutile ici, noire par défaut).
 7. **Tap sur la portée** : géométrie via `renderer.boundsLookup`
