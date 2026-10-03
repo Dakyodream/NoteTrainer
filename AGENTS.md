@@ -71,35 +71,48 @@ Le nom de la note s'affiche selon `Notes.noteName(letter, notation)` avec
 
 ## Rendu de partition : alphaTab — pièges importants
 
-`ui/StaffView.kt` wrappe `AlphaTabView` (vue Android classique, **pas** de contrôle
-Compose officiel) via `AndroidView` :
+`ui/StaffView.kt` utilise alphaTab en **mode headless** : `ScoreRenderer` produit
+directement des Bitmaps Android affichées dans un `Image()` Compose (pas de
+`AlphaTabView`/ScrollViews intermédiaires dans l'arbre UI).
 
 1. **Moteur de rendu** : `settings.core.engine = "android"` (Canvas Android pur).
    NE PAS utiliser `"skia"` : la lib native `libalphaskiajni.so` n'est PAS alignée
    16 KB → refus de chargement sur Android 15+ en mode pages 16 KB → partition vide.
    (alphaSkia n'a pas de correctif 16 KB à ce jour.)
-2. **Rendu initial** : ne JAMAIS appeler `api.tex()` avant que la vue soit mesurée
-   (`view.width > 0`). Sinon alphaTab rend avec `container.width = 0` → cadre vide.
-   → Différé via `onLayout` du conteneur (`renderWhenLaidOut`).
-3. **Contenu AlphaTex** : `\instrument 0` obligatoire (instrument par défaut = 25
+2. **Initialisation plateforme obligatoire** : la police Bravura
+   (`AndroidCanvas.MusicFont`) et `Environment.highDpiFactor` ne sont initialisées
+   QUE par `AlphaTabView.init` (via `AndroidEnvironment.initializeAndroid`, internal).
+   → `ensurePlatform()` instancie une `AlphaTabView(context, null)` hors-écran une
+   seule fois avant tout rendu. SANS CELA : bitmap de taille 0 → rectangle vide.
+3. **Lazy loading** : `core.enableLazyLoading = false` obligatoire en headless —
+   sinon les tranches sont enregistrées "lazy" et `renderLazyPartial` n'est jamais
+   appelé (rôle d'`AlphaTabView`) → rien ne s'affiche.
+4. **Unités** : `renderer.width` = pixels / densité (unités logiques, comme
+   `AndroidViewContainer.width`). `registerPartial` multiplie déjà x/y/totaux par
+   `display.scale` ; `AndroidCanvas.beginRender` multiplie par `highDpiFactor`
+   (= densité). Pour l'assemblage des tranches et le mapping du tap : multiplier
+   par `density` uniquement.
+5. **Rendu initial** : différer jusqu'au premier layout (`BoxWithConstraints`),
+   jamais rendre avec largeur 0 (sinon cadre vide).
+6. **Contenu AlphaTex** : `\instrument 0` obligatoire (instrument par défaut = 25
    guitare → alphaTab afficherait une tablature en plus de la portée).
    Format : `\instrument 0 \clef treble . c4` (clé : `treble`/`bass` ; silence : `r` ;
    altérations : `#`/`b` collés à la lettre ; octave = octave scientifique : `c4` = do3).
    En 1.6.x le `/` de durée n'existe pas (c'est un commentaire), la durée se met
    après `:` (inutile ici, noire par défaut).
-4. **Tap sur la portée** : la géométrie est lue via `api.boundsLookup`
-   (`staffSystems[0].bars[0].lineAlignedBounds` : `.y` = ligne du haut, `.h` = 8 steps).
-   Coordonnées logiques = pixels / densité écran. Prendre `density` via
-   `view.context.resources.displayMetrics.density` — `Environment.HighDpiFactor` est
-   `internal` dans alphaTab (même valeur, initialisée pareil).
-5. **API alphaTab 1.6.1 en Kotlin** : membres statiques/enum en PascalCase
-   (`PlayerMode.Disabled`, `Environment.HighDpiFactor`), propriétés d'instance en
-   camelCase (`settings.display.scale`). Tout le fichier alphaTab requiert
+7. **Tap sur la portée** : géométrie via `renderer.boundsLookup`
+   (`staffSystems[0].bars[0].lineAlignedBounds` : `.y` = ligne du haut, `.h` = 8 steps ;
+   `finish(scale)` est appelé avant `renderFinished`). La bitmap est affichée en
+   `ContentScale.FillWidth` → facteur `bmpWidth / displayedWidth` pour convertir le tap.
+8. **API alphaTab 1.6.1 en Kotlin** : membres statiques/enum en PascalCase
+   (`PlayerMode.Disabled`), propriétés d'instance en camelCase
+   (`settings.display.scale`), `Environment.HighDpiFactor` est `internal`
+   (utiliser la densité Compose à la place). Tout le fichier alphaTab requiert
    `@OptIn(ExperimentalContracts::class, ExperimentalUnsignedTypes::class)`
    (opt-in au niveau fichier dans StaffView.kt).
-6. `net.alphatab:alphaTab` embarque la police Bravura (`Bravura.otf`) dans ses assets —
+9. `net.alphatab:alphaTab` embarque la police Bravura (`Bravura.otf`) dans ses assets —
    rien à embarquer côté app. Le filtre assets de l'AAR exclut `.ttf` mais PAS `.otf`.
-7. ProGuard (build release, R8 activé) : règles keep pour `alphaTab.**` et
+10. ProGuard (build release, R8 activé) : règles keep pour `alphaTab.**` et
    `net.alphaskia.**` dans `app/proguard-rules.pro` (code transpilé, sensible au rename).
 
 ## Thème
