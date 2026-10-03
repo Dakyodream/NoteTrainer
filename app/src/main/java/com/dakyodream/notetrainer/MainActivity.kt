@@ -31,11 +31,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val themeMode by rememberSaveable { mutableStateOf(ThemeMode.SYSTEM) }
-            NoteTrainerTheme(themeMode = themeMode) {
-                NoteTrainerApp(themeMode = themeMode, onThemeChange = { themeMode = it })
-            }
+            NoteTrainerRoot()
         }
+    }
+}
+
+@Composable
+fun NoteTrainerRoot() {
+    var themeMode by rememberSaveable { mutableStateOf(ThemeMode.SYSTEM) }
+    NoteTrainerTheme(themeMode = themeMode) {
+        NoteTrainerApp(themeMode = themeMode, onThemeChange = { themeMode = it })
     }
 }
 
