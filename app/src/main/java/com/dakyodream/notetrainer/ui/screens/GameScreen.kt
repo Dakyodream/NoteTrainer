@@ -156,8 +156,7 @@ private fun NameModeContent(
     StaffView(
         clef = state.clef,
         notes = listOf(StaffNote(target, color = ink)),
-        noteColor = ink,
-        staffColor = ink
+        inkColor = ink
     )
     Text(
         stringResource(R.string.mode_name_prompt),
@@ -227,8 +226,7 @@ private fun PlaceModeContent(
     StaffView(
         clef = state.clef,
         notes = emptyList(),
-        noteColor = ink,
-        staffColor = ink,
+        inkColor = ink,
         onStaffTap = onStaffTap
     )
 }
@@ -262,8 +260,7 @@ private fun EarModeContent(
     StaffView(
         clef = state.clef,
         notes = emptyList(),
-        noteColor = ink,
-        staffColor = ink,
+        inkColor = ink,
         onStaffTap = onStaffTap
     )
 }

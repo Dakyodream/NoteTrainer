@@ -3,23 +3,22 @@
     <string name="app_name">NoteTrainer</string>
 
     <!-- Notation -->
-    <string name="notation_fr">♩ - fr</string>
-    <string name="notation_en">♩ - en</string>
+    <string name="notation_fr">♩ - fr (Do Ré Mi)</string>
+    <string name="notation_en">♩ - en (C D E)</string>
     <string name="notation_title">Notation</string>
 
     <!-- Thème -->
-    <string name="theme_title">Thème</string>
     <string name="theme_light">Clair</string>
     <string name="theme_dark">Sombre</string>
-    <string name="theme_system">Système</string>
+    <string name="theme_system">Auto</string>
 
-    <!-- Modes -->
+    <!-- Modes : %1$s = nom de la note (La ou A) selon la notation choisie -->
     <string name="mode_title_games">Mode de jeu</string>
-    <string name="mode_name">♩ ➜ La</string>
+    <string name="mode_name">♩ ➜ %1$s</string>
     <string name="mode_name_desc">Une note s\'affiche sur la partition, trouvez son nom.</string>
-    <string name="mode_place">La ➜ ♩</string>
+    <string name="mode_place">%1$s ➜ ♩</string>
     <string name="mode_place_desc">Un nom de note s\'affiche, placez-la sur la partition.</string>
-    <string name="mode_ear">🔊 ➜ La</string>
+    <string name="mode_ear">🔊 ➜ %1$s</string>
     <string name="mode_ear_desc">Écoutez le son et placez la note sur la partition.</string>
 
     <!-- Difficultés -->
@@ -45,7 +44,6 @@
     <string name="round">Manche %1$d/%2$d</string>
     <string name="score">⭐ %1$d</string>
     <string name="next_note">Note suivante</string>
-    <string name="listen_again">🔊 Réécouter</string>
     <string name="game_over">Partie terminée !</string>
     <string name="replay">Rejouer</string>
     <string name="menu">Menu</string>
@@ -59,15 +57,28 @@
     <string name="mode_ear_prompt">Écoutez puis placez la note</string>
     <string name="mode_ear_listen">🔊 Réécouter</string>
 
-    <!-- Menu / infos -->
+    <!-- Menu -->
     <string name="help">ℹ️ Aide</string>
     <string name="credits">👤 Crédits</string>
     <string name="license">⚖️ Licence</string>
     <string name="back">← Retour au menu</string>
 
+    <!-- Statistiques -->
+    <string name="stats_title">📊 Statistiques</string>
+    <string name="stats_week">Cette semaine</string>
+    <string name="stats_month">Ce mois</string>
+    <string name="stats_all">Depuis le début</string>
+    <string name="stats_games">%1$d parties</string>
+    <string name="stats_avg">Score moyen : %1$.1f</string>
+    <string name="stats_best">Meilleur score : %1$d</string>
+    <string name="stats_rounds">%1$d notes jouées</string>
+    <string name="stats_none">Aucune partie enregistrée pour l\'instant.\n\nJouez une partie complète pour voir vos progrès !</string>
+    <string name="stats_offline">🔒 100 %% hors ligne : vos statistiques restent sur votre appareil, aucune donnée n\'est collectée.</string>
+    <string name="stats_per_mode">Par mode de jeu</string>
+
     <!-- Aide -->
     <string name="help_body">Trois modes de jeu, dans l\'esprit du Simon, pour mémoriser les notes.\n\n1. ♩ ➜ La : une note apparaît sur la partition (clé de Sol ou de Fa). Touchez le bouton portant son nom.\n\n2. La ➜ ♩ : le nom de la note s\'affiche avec son octave. Choisissez l\'altération (♭ ♮ ♯) puis touchez la bonne position sur la portée.\n\n3. 🔊 ➜ La : le jeu joue une séquence de notes. Écoutez, réécoutez si besoin, et placez chaque note dans l\'ordre.\n\nÉtendue : de 4 notes sous la première ligne à 4 notes au-dessus de la dernière ligne de la portée.\n\nAstuce : en clé de Sol, les lignes de bas en haut donnent Mi Sol Si Ré Fa, et les interlignes Fa La Do Mi.</string>
 
     <!-- Crédits -->
-    <string name="credits_body">NoteTrainer — version 1.0.0\n\nProjet open source et gratuit, publié sous licence MIT.\n\nTechnologies :\n• Kotlin + Jetpack Compose (Material 3)\n• Sons générés localement par synthèse\n• Rendu de portée inspiré de LilyPond (lilypond.org)\n\nMerci de jouer, contribuer et partager !</string>
+    <string name="credits_body">NoteTrainer — version 1.1.0\n\nProjet open source et gratuit, publié sous licence MIT.\n\nTechnologies :\n• Kotlin + Jetpack Compose (Material 3)\n• Sons générés localement par synthèse\n• Portée dessinée en Canvas, style inspiré de LilyPond (lilypond.org)\n\nMerci de jouer, contribuer et partager !</string>
 </resources>

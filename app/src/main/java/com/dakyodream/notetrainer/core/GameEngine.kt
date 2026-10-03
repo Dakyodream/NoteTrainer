@@ -32,6 +32,9 @@ class GameEngine : ViewModel() {
 
     private val rng = Random.Default
 
+    /** Callback appelé une fois par partie terminée, pour enregistrer les stats. */
+    var onGameOver: ((GameMode, Difficulty, Int, Int) -> Unit)? = null
+
     fun startGame(mode: GameMode, difficulty: Difficulty, clef: Clef, notation: Notation) {
         _state.value = GameState(
             mode = mode,
@@ -85,6 +88,10 @@ class GameEngine : ViewModel() {
         val roundsDone = s.mode != GameMode.EAR_TRAINING && s.round >= s.difficulty.rounds
         val gameOver = newLives <= 0 || seqDone || roundsDone
         val highScore = maxOf(newScore, s.highScore)
+        val roundsPlayed = if (s.mode == GameMode.EAR_TRAINING) newIdx else s.round
+        if (gameOver && !s.isGameOver) {
+            onGameOver?.invoke(s.mode, s.difficulty, newScore, roundsPlayed)
+        }
         _state.value = s.copy(
             score = newScore,
             lives = newLives,

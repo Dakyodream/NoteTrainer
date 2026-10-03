@@ -3,10 +3,20 @@ package com.dakyodream.notetrainer.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -17,6 +27,7 @@ import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Difficulty
 import com.dakyodream.notetrainer.core.GameMode
 import com.dakyodream.notetrainer.core.Notation
+import com.dakyodream.notetrainer.core.Notes
 import com.dakyodream.notetrainer.ui.ThemeMode
 
 @Composable
@@ -28,11 +39,15 @@ fun MenuScreen(
     onStartGame: (GameMode, Difficulty, Clef, Notation) -> Unit,
     onShowCredits: () -> Unit,
     onShowInfo: () -> Unit,
-    onShowLicense: () -> Unit
+    onShowLicense: () -> Unit,
+    onShowStats: () -> Unit
 ) {
     var selectedMode by remember { mutableStateOf(GameMode.NAME_THE_NOTE) }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
     var selectedClef by remember { mutableStateOf(Clef.TREBLE) }
+    var drawerOpen by remember { mutableStateOf(false) }
+
+    val aName = Notes.noteName('A', notation)
 
     Column(
         modifier = Modifier
@@ -42,6 +57,40 @@ fun MenuScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // ----- Header : burger à gauche, icônes thème à droite -----
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { drawerOpen = true }) {
+                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                ThemeMode.entries.forEach { t ->
+                    val icon: ImageVector = when (t) {
+                        ThemeMode.LIGHT -> Icons.Filled.LightMode
+                        ThemeMode.DARK -> Icons.Filled.DarkMode
+                        ThemeMode.SYSTEM -> Icons.Filled.Settings
+                    }
+                    val label = stringResource(
+                        when (t) {
+                            ThemeMode.LIGHT -> R.string.theme_light
+                            ThemeMode.DARK -> R.string.theme_dark
+                            ThemeMode.SYSTEM -> R.string.theme_system
+                        }
+                    )
+                    FilterChip(
+                        selected = themeMode == t,
+                        onClick = { onThemeChange(t) },
+                        label = { },
+                        leadingIcon = { Icon(icon, contentDescription = label, modifier = Modifier.size(18.dp)) }
+                    )
+                }
+            }
+        }
+
+        // ----- Titre -----
         Text("🎵 NoteTrainer", fontSize = 32.sp, fontWeight = FontWeight.Bold)
 
         SectionTitle(stringResource(R.string.clef_title))
@@ -61,7 +110,7 @@ fun MenuScreen(
         SectionTitle(stringResource(R.string.mode_title_games))
         GameMode.entries.forEach { mode ->
             ModeCard(
-                title = stringResource(mode.titleRes),
+                title = stringResource(mode.titleRes, aName),
                 description = stringResource(mode.descRes),
                 selected = selectedMode == mode,
                 onClick = { selectedMode = mode }
@@ -101,38 +150,6 @@ fun MenuScreen(
             textAlign = TextAlign.Center
         )
 
-        SectionTitle(stringResource(R.string.notation_title))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Notation.entries.forEach { n ->
-                FilterChip(
-                    selected = notation == n,
-                    onClick = { onNotationChange(n) },
-                    label = { Text(stringResource(n.labelRes)) }
-                )
-            }
-        }
-
-        SectionTitle(stringResource(R.string.theme_title))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ThemeMode.entries.forEach { t ->
-                FilterChip(
-                    selected = themeMode == t,
-                    onClick = { onThemeChange(t) },
-                    label = {
-                        Text(
-                            stringResource(
-                                when (t) {
-                                    ThemeMode.LIGHT -> R.string.theme_light
-                                    ThemeMode.DARK -> R.string.theme_dark
-                                    ThemeMode.SYSTEM -> R.string.theme_system
-                                }
-                            )
-                        )
-                    }
-                )
-            }
-        }
-
         Spacer(Modifier.height(8.dp))
         Button(
             onClick = { onStartGame(selectedMode, selectedDifficulty, selectedClef, notation) },
@@ -140,11 +157,53 @@ fun MenuScreen(
         ) {
             Text(stringResource(R.string.play), fontSize = 20.sp)
         }
+    }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onShowInfo) { Text(stringResource(R.string.help)) }
-            TextButton(onClick = onShowCredits) { Text(stringResource(R.string.credits)) }
-            TextButton(onClick = onShowLicense) { Text(stringResource(R.string.license)) }
+    // ----- Panneau burger (bottom sheet) -----
+    if (drawerOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { drawerOpen = false }
+        ) {
+            Column(
+                Modifier
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    stringResource(R.string.notation_title),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                Notation.entries.forEach { n ->
+                    FilterChip(
+                        selected = notation == n,
+                        onClick = { onNotationChange(n); drawerOpen = false },
+                        label = { Text(stringResource(n.labelRes)) }
+                    )
+                }
+                HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                DrawerItem(Icons.Filled.Info, stringResource(R.string.help)) { onShowInfo(); drawerOpen = false }
+                DrawerItem(Icons.Filled.Person, stringResource(R.string.credits)) { onShowCredits(); drawerOpen = false }
+                DrawerItem(Icons.Filled.Gavel, stringResource(R.string.license)) { onShowLicense(); drawerOpen = false }
+                DrawerItem(Icons.Filled.BarChart, stringResource(R.string.stats_title)) { onShowStats(); drawerOpen = false }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DrawerItem(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Surface(onClick = onClick, shape = MaterialTheme.shapes.medium) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(icon, contentDescription = label, modifier = Modifier.size(20.dp))
+            Text(label)
         }
     }
 }
