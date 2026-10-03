@@ -97,7 +97,9 @@ fun StaffView(
                 settings.player.playerMode = PlayerMode.Disabled
                 settings.player.enableCursor = false
                 settings.player.enableUserInteraction = false
-                settings.core.engine = "skia"
+                // moteur "android" = Canvas Android pur, sans lib native (libalphaskiajni.so
+                // n'est pas alignée 16 KB : chargement bloqué sur appareils Android 15+ en pages 16 KB)
+                settings.core.engine = "android"
                 settings.display.scale = 1.3
             }
             addChildOnce(tapInterceptor, alphaTabView)
