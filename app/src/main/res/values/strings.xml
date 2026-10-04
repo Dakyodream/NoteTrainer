@@ -74,6 +74,9 @@
     <string name="stats_avg">Score moyen : %1$.1f</string>
     <string name="stats_best">Meilleur score : %1$d</string>
     <string name="stats_rounds">%1$d notes jouées</string>
+    <string name="stats_accuracy">Précision : %1$.0f %% (%2$d/%3$d)</string>
+    <string name="stats_diff_breakdown">Meilleurs scores par difficulté :</string>
+    <string name="stats_diff_score">%1$s : %2$d pt(s)</string>
     <string name="stats_none">Aucune partie enregistrée pour l\'instant.\n\nJouez une partie complète pour voir vos progrès !</string>
     <string name="stats_offline">🔒 100 %% hors ligne : vos statistiques restent sur votre appareil, aucune donnée n\'est collectée.</string>
     <string name="stats_per_mode">Par mode de jeu</string>

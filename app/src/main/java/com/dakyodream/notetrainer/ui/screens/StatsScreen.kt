@@ -13,12 +13,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dakyodream.notetrainer.R
+import com.dakyodream.notetrainer.core.Difficulty
 import com.dakyodream.notetrainer.core.GameMode
 import com.dakyodream.notetrainer.core.GameRecord
 import com.dakyodream.notetrainer.core.Notation
 import com.dakyodream.notetrainer.core.Notes
 import com.dakyodream.notetrainer.core.StatsStore
-import java.util.Calendar
 
 private enum class StatsPeriod(@JvmField val days: Int) {
     WEEK(7), MONTH(30), ALL(Int.MAX_VALUE)
@@ -85,11 +85,9 @@ fun StatsScreen(notation: Notation, onBack: () -> Unit) {
             GameMode.entries.forEach { mode ->
                 val modeRecords = filtered.filter { it.mode == mode }
                 if (modeRecords.isNotEmpty()) {
-                    ModeRow(
+                    ModeCard(
                         title = stringResource(mode.titleRes, Notes.noteName('A', notation)),
-                        count = modeRecords.size,
-                        avg = modeRecords.map { it.score }.average().toFloat(),
-                        best = modeRecords.maxOf { it.score }
+                        records = modeRecords
                     )
                 }
             }
@@ -109,11 +107,19 @@ fun StatsScreen(notation: Notation, onBack: () -> Unit) {
 
 @Composable
 private fun SummaryCard(records: List<GameRecord>) {
+    val totalCorrect = records.sumOf { it.correctAnswers }
+    val totalWrong = records.sumOf { it.wrongAnswers }
+    val totalAns = totalCorrect + totalWrong
+    val accuracy = if (totalAns > 0) (totalCorrect.toDouble() / totalAns * 100) else 0.0
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.stats_games, records.size), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text(stringResource(R.string.stats_avg, records.map { it.score }.average().toFloat()), fontSize = 14.sp)
             Text(stringResource(R.string.stats_best, records.maxOf { it.score }), fontSize = 14.sp)
+            if (totalAns > 0) {
+                Text(stringResource(R.string.stats_accuracy, accuracy, totalCorrect, totalAns), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            }
             Text(
                 stringResource(R.string.stats_rounds, records.sumOf { it.roundsPlayed }),
                 fontSize = 14.sp
@@ -123,21 +129,48 @@ private fun SummaryCard(records: List<GameRecord>) {
 }
 
 @Composable
-private fun ModeRow(title: String, count: Int, avg: Float, best: Int) {
+private fun ModeCard(title: String, records: List<GameRecord>) {
+    val totalCorrect = records.sumOf { it.correctAnswers }
+    val totalWrong = records.sumOf { it.wrongAnswers }
+    val totalAns = totalCorrect + totalWrong
+    val accuracy = if (totalAns > 0) (totalCorrect.toDouble() / totalAns * 100) else 0.0
+
     Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
+        Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column {
-                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                Text(stringResource(R.string.stats_games, count), fontSize = 12.sp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.stats_games, records.size), fontSize = 12.sp)
             }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(stringResource(R.string.stats_avg, avg), fontSize = 12.sp)
-                Text(stringResource(R.string.stats_best, best), fontSize = 12.sp)
+
+            if (totalAns > 0) {
+                Text(
+                    stringResource(R.string.stats_accuracy, accuracy, totalCorrect, totalAns),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Text(stringResource(R.string.stats_diff_breakdown), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Difficulty.entries.forEach { diff ->
+                val diffRecords = records.filter { it.difficulty == diff }
+                if (diffRecords.isNotEmpty()) {
+                    val maxScore = diffRecords.maxOf { it.score }
+                    val diffName = stringResource(diff.labelRes)
+                    Text(
+                        stringResource(R.string.stats_diff_score, diffName, maxScore),
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
         }
     }
