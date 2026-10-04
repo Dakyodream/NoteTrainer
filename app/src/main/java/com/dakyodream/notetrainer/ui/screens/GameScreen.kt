@@ -94,9 +94,10 @@ fun GameScreen(
                     color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
                     textAlign = TextAlign.Center
                 )
-                if (state.lastBonusSec != null && state.lastBonusSec!! > 0) {
+                val bonus = state.lastBonusSec
+                if (bonus != null && bonus > 0) {
                     Text(
-                        text = stringResource(R.string.time_bonus, state.lastBonusSec),
+                        text = stringResource(R.string.time_bonus, bonus),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF2E7D32)
