@@ -85,19 +85,26 @@ class AudioPlayer(context: Context) {
         fun synthesizeSine(freq: Double, durationSec: Double = 1.0): ShortArray {
             val n = (durationSec * SAMPLE_RATE).toInt()
             val out = ShortArray(n)
-            val attack = (0.01 * SAMPLE_RATE).toInt().coerceAtMost(n)
-            val release = (0.35 * SAMPLE_RATE).toInt().coerceAtMost(n - attack)
+            val attack = (0.02 * SAMPLE_RATE).toInt().coerceAtMost(n)
+            val decay = (0.10 * SAMPLE_RATE).toInt().coerceAtMost(n - attack)
+            val release = (0.15 * SAMPLE_RATE).toInt().coerceAtMost(n - attack - decay)
+            val sustainLevel = 0.85
+
             for (i in 0 until n) {
                 val t = i.toDouble() / SAMPLE_RATE
                 val s = sin(2 * PI * freq * t) +
-                        0.4 * sin(2 * PI * freq * 2 * t) +
-                        0.15 * sin(2 * PI * freq * 3 * t)
+                        0.35 * sin(2 * PI * freq * 2 * t) +
+                        0.12 * sin(2 * PI * freq * 3 * t)
                 val env = when {
-                    i < attack -> i.toDouble() / attack
-                    i > n - release -> ((n - i).toDouble() / release).coerceIn(0.0, 1.0)
-                    else -> 1.0
+                    i < attack -> (i.toDouble() / attack)
+                    i < attack + decay -> 1.0 - (1.0 - sustainLevel) * ((i - attack).toDouble() / decay)
+                    i > n - release -> {
+                        val relPos = (n - i).toDouble() / release
+                        sustainLevel * (0.5 * (1.0 - kotlin.math.cos(relPos * PI)))
+                    }
+                    else -> sustainLevel
                 }
-                val v = (s * env * 0.5 * Short.MAX_VALUE).toInt()
+                val v = (s * env * 0.45 * Short.MAX_VALUE).toInt()
                 out[i] = v.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
             }
             return out
