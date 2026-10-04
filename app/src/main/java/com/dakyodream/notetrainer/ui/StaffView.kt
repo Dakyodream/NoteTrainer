@@ -81,6 +81,8 @@ private class RenderOutput(
     val staffHeight: Float
 )
 
+private val scoreCache = android.util.LruCache<String, RenderOutput>(30)
+
 private fun ensurePlatform(context: Context) {
     if (!platformReady) {
         // Déclenche AndroidEnvironment.initializeAndroid : charge Bravura.otf
@@ -93,8 +95,14 @@ private fun ensurePlatform(context: Context) {
 private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
     val empty = RenderOutput(null, -1f, -1f)
     if (widthPx <= 0 || density <= 0) return empty
+    val cacheKey = "$tex|$widthPx|$argb|$density"
+    scoreCache.get(cacheKey)?.let { return it }
     return try {
-        renderScoreInternal(tex, widthPx, argb, density)
+        val out = renderScoreInternal(tex, widthPx, argb, density)
+        if (out.bitmap != null) {
+            scoreCache.put(cacheKey, out)
+        }
+        out
     } catch (e: Exception) {
         android.util.Log.e("NoteTrainer.Staff", "alphaTab render failed: ${e.message}", e)
         empty
