@@ -64,14 +64,16 @@ fun NoteTrainerApp(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
         color = MaterialTheme.colorScheme.background
     ) {
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        engine.onGameOver = { mode, difficulty, score, rounds ->
+        engine.onGameOver = { mode, difficulty, score, rounds, correct, wrong ->
             statsStore.add(
                 GameRecord(
                     timestamp = System.currentTimeMillis(),
                     mode = mode,
                     difficulty = difficulty,
                     score = score,
-                    roundsPlayed = rounds
+                    roundsPlayed = rounds,
+                    correctAnswers = correct,
+                    wrongAnswers = wrong
                 )
             )
         }

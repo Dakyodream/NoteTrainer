@@ -45,6 +45,8 @@
     <string name="score">⭐ %1$d</string>
     <string name="next_note">Note suivante</string>
     <string name="game_over">Partie terminée !</string>
+    <string name="game_over_time">Temps écoulé !</string>
+    <string name="time_bonus">+%1$.1f s</string>
     <string name="replay">Rejouer</string>
     <string name="menu">Menu</string>
     <string name="final_score">Score : %1$d</string>

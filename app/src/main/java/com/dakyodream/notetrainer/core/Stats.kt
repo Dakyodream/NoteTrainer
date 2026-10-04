@@ -14,7 +14,9 @@ data class GameRecord(
     val mode: GameMode,
     val difficulty: Difficulty,
     val score: Int,
-    val roundsPlayed: Int
+    val roundsPlayed: Int,
+    val correctAnswers: Int = score,
+    val wrongAnswers: Int = (roundsPlayed - score).coerceAtLeast(0)
 )
 
 class StatsStore(context: Context) {
@@ -28,18 +30,24 @@ class StatsStore(context: Context) {
             val list = mutableListOf<GameRecord>()
             for (i in 0 until arr.length()) {
                 val o = arr.getJSONObject(i)
+                val score = o.optInt("score", 0)
+                val rounds = o.optInt("rounds", 0)
+                val correct = o.optInt("correct", score)
+                val wrong = o.optInt("wrong", (rounds - correct).coerceAtLeast(0))
                 list.add(
                     GameRecord(
                         timestamp = o.getLong("ts"),
                         mode = GameMode.valueOf(o.getString("mode")),
                         difficulty = Difficulty.valueOf(o.getString("diff")),
-                        score = o.getInt("score"),
-                        roundsPlayed = o.getInt("rounds")
+                        score = score,
+                        roundsPlayed = rounds,
+                        correctAnswers = correct,
+                        wrongAnswers = wrong
                     )
                 )
             }
             list
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             mutableListOf()
         }
     }
@@ -54,6 +62,8 @@ class StatsStore(context: Context) {
                     put("diff", r.difficulty.name)
                     put("score", r.score)
                     put("rounds", r.roundsPlayed)
+                    put("correct", r.correctAnswers)
+                    put("wrong", r.wrongAnswers)
                 })
             }
             file.writeText(arr.toString())

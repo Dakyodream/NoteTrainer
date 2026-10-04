@@ -39,6 +39,8 @@
     <string name="score">⭐ %1$d</string>
     <string name="next_note">Next note</string>
     <string name="game_over">Game over!</string>
+    <string name="game_over_time">Time\'s up!</string>
+    <string name="time_bonus">+%1$.1f s</string>
     <string name="replay">Play again</string>
     <string name="menu">Menu</string>
     <string name="final_score">Score: %1$d</string>
