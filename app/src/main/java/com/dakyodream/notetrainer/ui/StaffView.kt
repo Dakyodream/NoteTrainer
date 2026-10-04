@@ -32,6 +32,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Note
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
@@ -175,7 +177,9 @@ private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: F
     }
     // largeur logique (unités layout) : pixels / density, comme AndroidUiFacade
     renderer.width = (widthPx / density).toDouble()
-    renderer.renderScore(score, null)
+    if (score.tracks.length > 0) {
+        renderer.renderTracks(score.tracks)
+    }
     return result
 }
 
@@ -205,7 +209,9 @@ fun StaffView(
         var output by remember(tex) { mutableStateOf<RenderOutput?>(null) }
 
         LaunchedEffect(tex, widthPx, argb, density) {
-            output = renderScore(tex, widthPx, argb, density)
+            output = withContext(Dispatchers.Default) {
+                renderScore(tex, widthPx, argb, density)
+            }
         }
 
         output?.let { out ->
