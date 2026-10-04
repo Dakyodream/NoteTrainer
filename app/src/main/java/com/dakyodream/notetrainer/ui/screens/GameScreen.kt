@@ -19,14 +19,15 @@ import com.dakyodream.notetrainer.R
 import com.dakyodream.notetrainer.core.AudioPlayer
 import com.dakyodream.notetrainer.core.GameEngine
 import com.dakyodream.notetrainer.core.GameMode
+import com.dakyodream.notetrainer.core.GameState
 import com.dakyodream.notetrainer.core.Note
 import com.dakyodream.notetrainer.core.Notes
-import com.dakyodream.notetrainer.core.Notation
-import com.dakyodream.notetrainer.ui.StaffNote
 import com.dakyodream.notetrainer.ui.StaffHitResult
+import com.dakyodream.notetrainer.ui.StaffNote
 import com.dakyodream.notetrainer.ui.StaffView
 import com.dakyodream.notetrainer.ui.staffInkColor
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 @Composable
 fun GameScreen(
@@ -57,6 +58,7 @@ fun GameScreen(
     val ink = staffInkColor()
 
     fun onStaffTap(hit: StaffHitResult) {
+        if (state.isCorrect != null) return
         val midi = Notes.stepToMidi(hit.step, state.clef) + selectedAccidental
         val note = Notes.fromMidi(midi, preferSharps = selectedAccidental >= 0)
         engine.checkAnswerPlace(note)
@@ -70,13 +72,7 @@ fun GameScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatusRow(
-            lives = state.lives,
-            round = state.round,
-            totalRounds = if (mode == GameMode.EAR_TRAINING) state.sequence.size else state.difficulty.rounds,
-            score = state.score,
-            onExit = onExit
-        )
+        StatusRow(state = state, onExit = onExit)
 
         when (mode) {
             GameMode.NAME_THE_NOTE -> NameModeContent(engine, state, ink)
@@ -85,16 +81,28 @@ fun GameScreen(
         }
 
         state.feedbackRes?.let { res ->
-            Text(
-                text = if (state.feedbackExtra.isNotEmpty())
-                    stringResource(res, state.feedbackExtra)
-                else stringResource(res),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                textAlign = TextAlign.Center
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (state.feedbackExtra.isNotEmpty())
+                        stringResource(res, state.feedbackExtra)
+                    else stringResource(res),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
+                    textAlign = TextAlign.Center
+                )
+                if (state.lastBonusSec != null && state.lastBonusSec!! > 0) {
+                    Text(
+                        text = stringResource(R.string.time_bonus, state.lastBonusSec),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2E7D32)
+                    )
+                }
+            }
         }
 
         Button(
@@ -109,9 +117,9 @@ fun GameScreen(
     if (showGameOver) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text(stringResource(R.string.game_over)) },
+            title = { Text(stringResource(state.gameOverReason)) },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(stringResource(R.string.final_score, state.score))
                     Text(stringResource(R.string.best_score, state.highScore))
                     if (state.mode == GameMode.EAR_TRAINING) {
@@ -133,15 +141,29 @@ fun GameScreen(
 }
 
 @Composable
-private fun StatusRow(lives: Int, round: Int, totalRounds: Int, score: Int, onExit: () -> Unit) {
+private fun StatusRow(state: GameState, onExit: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(stringResource(R.string.lives, lives), fontSize = 18.sp)
-        Text(stringResource(R.string.round, round, totalRounds), fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-        Text(stringResource(R.string.score, score), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.lives, state.lives), fontSize = 16.sp)
+        if (state.isTimedMode) {
+            Text(
+                text = String.format(Locale.US, "⏱️ %.1fs", state.timeLeftSec),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (state.timeLeftSec <= 10.0) Color(0xFFC62828) else MaterialTheme.colorScheme.primary
+            )
+        } else {
+            val totalRounds = if (state.mode == GameMode.EAR_TRAINING) state.sequence.size else state.difficulty.rounds
+            Text(
+                text = stringResource(R.string.round, state.round, totalRounds),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Text(stringResource(R.string.score, state.score), fontSize = 16.sp, fontWeight = FontWeight.Bold)
         OutlinedButton(onClick = onExit) { Text(stringResource(R.string.quit)) }
     }
 }
@@ -149,13 +171,18 @@ private fun StatusRow(lives: Int, round: Int, totalRounds: Int, score: Int, onEx
 @Composable
 private fun NameModeContent(
     engine: GameEngine,
-    state: com.dakyodream.notetrainer.core.GameState,
+    state: GameState,
     ink: Color
 ) {
     val target = state.targetNote ?: return
+    val noteColor = when (state.isCorrect) {
+        true -> Color(0xFF2E7D32)
+        false -> Color(0xFFC62828)
+        null -> ink
+    }
     StaffView(
         clef = state.clef,
-        notes = listOf(StaffNote(target, color = ink)),
+        notes = listOf(StaffNote(target, color = noteColor)),
         inkColor = ink
     )
     Text(
@@ -193,7 +220,7 @@ private fun NameModeContent(
 @Composable
 private fun PlaceModeContent(
     engine: GameEngine,
-    state: com.dakyodream.notetrainer.core.GameState,
+    state: GameState,
     ink: Color,
     selectedAccidental: Int,
     onSelectAccidental: (Int) -> Unit,
@@ -217,24 +244,39 @@ private fun PlaceModeContent(
         listOf(-1 to "♭", 0 to "♮", 1 to "♯").forEach { (acc, sym) ->
             OutlinedButton(
                 onClick = { onSelectAccidental(acc) },
+                enabled = state.isCorrect == null,
                 colors = if (selectedAccidental == acc)
                     ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.primary)
                 else ButtonDefaults.outlinedButtonColors()
             ) { Text(sym, fontSize = 20.sp) }
         }
     }
+
+    val displayNotes = remember(state.isCorrect, state.targetNote, state.userPlacedNote) {
+        when (state.isCorrect) {
+            null -> emptyList()
+            true -> listOf(StaffNote(target, color = Color(0xFF2E7D32)))
+            false -> {
+                val list = mutableListOf<StaffNote>()
+                state.userPlacedNote?.let { list.add(StaffNote(it, color = Color(0xFFC62828))) }
+                list.add(StaffNote(target, color = Color(0xFF2E7D32)))
+                list
+            }
+        }
+    }
+
     StaffView(
         clef = state.clef,
-        notes = emptyList(),
+        notes = displayNotes,
         inkColor = ink,
-        onStaffTap = onStaffTap
+        onStaffTap = if (state.isCorrect == null) onStaffTap else null
     )
 }
 
 @Composable
 private fun EarModeContent(
     engine: GameEngine,
-    state: com.dakyodream.notetrainer.core.GameState,
+    state: GameState,
     audio: AudioPlayer,
     ink: Color,
     onStaffTap: (StaffHitResult) -> Unit
@@ -257,10 +299,25 @@ private fun EarModeContent(
             )
         }
     }
+
+    val displayNotes = remember(state.isCorrect, state.targetNote, state.userPlacedNote) {
+        val target = state.targetNote ?: return@remember emptyList()
+        when (state.isCorrect) {
+            null -> emptyList()
+            true -> listOf(StaffNote(target, color = Color(0xFF2E7D32)))
+            false -> {
+                val list = mutableListOf<StaffNote>()
+                state.userPlacedNote?.let { list.add(StaffNote(it, color = Color(0xFFC62828))) }
+                list.add(StaffNote(target, color = Color(0xFF2E7D32)))
+                list
+            }
+        }
+    }
+
     StaffView(
         clef = state.clef,
-        notes = emptyList(),
+        notes = displayNotes,
         inkColor = ink,
-        onStaffTap = onStaffTap
+        onStaffTap = if (state.isCorrect == null) onStaffTap else null
     )
 }
