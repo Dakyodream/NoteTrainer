@@ -136,6 +136,16 @@ Toutes les chaînes UI dans `strings.xml` (fr) et `values-en/strings.xml`.
 Penser à mettre à jour les DEUX fichiers. Les titres de modes contiennent
 l'esperluette ➜ et le symbole ♩/🔊 voulus par l'utilisateur.
 
+## UI/UX — conventions récentes
+
+- Feedback de réponse : `AnimatedVisibility` (fadeIn + slideInVertically) dans
+  GameScreen, + retour haptique (`LocalHapticFeedback`) et sons synthétisés
+  (`AudioPlayer.playResultSound`, aucun asset embarqué).
+- Préférences persistées : `SettingsStore` (SharedPreferences privées) pour
+  thème et notation. `rememberSaveable` seul ne survit pas au redémarrage.
+- Quitter une partie en cours : dialog de confirmation (sauf game over).
+- Game over : score en grand + badge "nouveau record" (chaîne `new_best`).
+
 ## Confidentialité / RGPD
 
 - Promesse : 100 % hors-ligne, zéro permission, zéro collecte (voir `PRIVACY.md`).
