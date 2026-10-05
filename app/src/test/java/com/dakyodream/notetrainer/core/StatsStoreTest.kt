@@ -118,7 +118,7 @@ class StatsStoreTest {
 
     @Test
     fun constants_weekMonthBounds() {
-        assertEquals(7L * 24 * 3600 * 1000, StatsStore.WEEK_MS)
-        assertEquals(30L * 24 * 3600 * 1000, StatsStore.MONTH_MS)
+        assertEquals(7L * 24 * 3600 * 1000, StatsFileStore.WEEK_MS)
+        assertEquals(30L * 24 * 3600 * 1000, StatsFileStore.MONTH_MS)
     }
 }

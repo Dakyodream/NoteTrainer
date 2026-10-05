@@ -5,6 +5,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -132,10 +133,10 @@ class GameEngineTest {
     fun onGameOver_firedOnce_withStats() {
         val e = engineWith(GameMode.NAME_THE_NOTE)
         var calls = 0
-        var lastStats: Triple<Int, Int, Int, Int>? = null
+        var lastStats: IntArray? = null
         e.onGameOver = { _, _, score, rounds, correct, wrong ->
             calls++
-            lastStats = Triple(score, rounds, correct, wrong)
+            lastStats = intArrayOf(score, rounds, correct, wrong)
         }
         // 1 bonne réponse puis 3 mauvaises -> 3 vies = 1 correct + 3 wrong
         val t1 = e.state.value.targetNote!!
@@ -147,7 +148,8 @@ class GameEngineTest {
             e.checkAnswerName(wrongLetter)
         }
         assertEquals(1, calls)
-        assertEquals(Triple(1, 4, 1, 3), lastStats)
+        assertNotNull(lastStats)
+        assertArrayEquals(intArrayOf(1, 4, 1, 3), lastStats)
     }
 
     @Test
