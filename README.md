@@ -1,5 +1,8 @@
 # NoteTrainer 🎵
 
+[![Android CI](https://github.com/Dakyodream/NoteTrainer/actions/workflows/android.yml/badge.svg)](https://github.com/Dakyodream/NoteTrainer/actions/workflows/android.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **NoteTrainer** est un jeu Android **open source et gratuit** (licence MIT) pour apprendre à lire les notes sur une partition — dans l'esprit du jeu Simon. Pensé pour les apprenants pianistes qui veulent mémoriser le nom des notes et leur position en clé de Sol et de Fa.
 
 ## 🎮 Modes de jeu
