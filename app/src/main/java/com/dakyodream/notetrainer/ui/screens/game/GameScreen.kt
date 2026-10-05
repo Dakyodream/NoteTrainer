@@ -159,8 +159,19 @@ fun GameScreen(
             onDismissRequest = {},
             title = { Text(stringResource(state.gameOverReason)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.final_score, state.score))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        stringResource(R.string.final_score, state.score),
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (state.score > 0 && state.score >= state.highScore) {
+                        Text(stringResource(R.string.new_best), fontWeight = FontWeight.Bold)
+                    }
                     Text(stringResource(R.string.best_score, state.highScore))
                     if (state.mode == GameMode.EAR_TRAINING) {
                         Text(stringResource(R.string.sequence_progress, state.sequenceIndex, state.sequence.size))

@@ -49,6 +49,7 @@
     <string name="menu">Menu</string>
     <string name="final_score">Score: %1$d</string>
     <string name="best_score">Best score: %1$d</string>
+    <string name="new_best">✨ New best!</string>
     <string name="sequence_progress">Sequence: %1$d/%2$d</string>
     <string name="feedback_correct">✅ Well done!</string>
     <string name="feedback_wrong">❌ Too bad, it was %1$s</string>
