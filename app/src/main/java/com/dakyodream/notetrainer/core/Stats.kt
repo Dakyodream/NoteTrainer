@@ -19,9 +19,14 @@ data class GameRecord(
     val wrongAnswers: Int = (roundsPlayed - score).coerceAtLeast(0)
 )
 
-class StatsStore(context: Context) {
+class StatsStore(context: Context) : StatsFileStore(File(context.filesDir, "stats.json"))
 
-    private val file: File = File(context.filesDir, "stats.json")
+/**
+ * Persistance des stats sur un fichier donné (testable sans Context Android).
+ * Écriture atomique : temp + rename pour éviter la corruption si le processus
+ * est tué au milieu d'une sauvegarde.
+ */
+open class StatsFileStore(private val file: File) {
 
     fun load(): MutableList<GameRecord> {
         if (!file.exists()) return mutableListOf()
@@ -66,7 +71,14 @@ class StatsStore(context: Context) {
                     put("wrong", r.wrongAnswers)
                 })
             }
-            file.writeText(arr.toString())
+            val tmp = File(file.parentFile, file.name + ".tmp")
+            tmp.writeText(arr.toString())
+            if (file.exists()) file.delete()
+            if (!tmp.renameTo(file)) {
+                // rename échoué (ex. FS exotique) : fallback écriture directe
+                file.writeText(arr.toString())
+                tmp.delete()
+            }
         } catch (_: Exception) {
         }
     }
