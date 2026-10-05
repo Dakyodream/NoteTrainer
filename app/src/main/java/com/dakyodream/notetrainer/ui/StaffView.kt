@@ -87,7 +87,18 @@ private fun ensurePlatform(context: Context) {
     if (!platformReady) {
         // Déclenche AndroidEnvironment.initializeAndroid : charge Bravura.otf
         // dans AndroidCanvas.MusicFont et règle Environment.highDpiFactor.
-        AlphaTabView(context, null)
+        // initializeAndroid appelle aussi AlphaSkiaAndroid.initialize()
+        // (System.loadLibrary("alphaskiajni")) : si la lib est absente/refusée
+        // (pages 16 KB), on tolère l'échec — Bravura et la densité sont déjà
+        // initialisés à ce stade et le moteur "android" n'utilise PAS alphaSkia
+        // (seul le moteur "skia" en dépend).
+        try {
+            AlphaTabView(context, null)
+        } catch (e: UnsatisfiedLinkError) {
+            android.util.Log.w("NoteTrainer.Staff", "alphaSkia indisponible (${e.message}), le moteur 'android' continue sans elle")
+        } catch (e: Exception) {
+            android.util.Log.e("NoteTrainer.Staff", "init alphaTab: ${e.message}", e)
+        }
         platformReady = true
     }
 }

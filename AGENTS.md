@@ -79,6 +79,11 @@ directement des Bitmaps Android affichées dans un `Image()` Compose (pas de
    NE PAS utiliser `"skia"` : la lib native `libalphaskiajni.so` n'est PAS alignée
    16 KB → refus de chargement sur Android 15+ en mode pages 16 KB → partition vide.
    (alphaSkia n'a pas de correctif 16 KB à ce jour.)
+   ATTENTION : NE PAS exclure libalphaskiajni.so du packaging —
+   AndroidEnvironment.initializeAndroid fait System.loadLibrary("alphaskiajni")
+   → UnsatisfiedLinkError → crash au lancement d'un jeu (déjà rencontré).
+   ensurePlatform() tolère néanmoins un échec de chargement alphaSkia (le moteur
+   "android" n'en dépend pas : Bravura et la densité sont initialisés avant).
 2. **Initialisation plateforme obligatoire** : la police Bravura
    (`AndroidCanvas.MusicFont`) et `Environment.highDpiFactor` ne sont initialisées
    QUE par `AlphaTabView.init` (via `AndroidEnvironment.initializeAndroid`, internal).
