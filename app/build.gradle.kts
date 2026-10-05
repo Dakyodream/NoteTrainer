@@ -49,6 +49,7 @@ android {
         // L'exclure provoque UnsatisfiedLinkError -> crash au lancement d'un jeu.
         // Le warning 16 KB n'est pas bloquant (pages 4 KB par défaut) ; le rendu
         // utilise le moteur "android" qui ne dépend pas de cette lib.
+    }
 }
 
 dependencies {
