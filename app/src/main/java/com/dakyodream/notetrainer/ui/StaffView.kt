@@ -75,12 +75,6 @@ private fun texFor(clef: Clef, notes: List<StaffNote>): String {
     return "\\instrument 0 . \\clef $clefName $body"
 }
 
-private class RenderOutput(
-    val bitmap: Bitmap?,
-    val staffTopY: Float,
-    val staffHeight: Float
-)
-
 private val scoreCache = android.util.LruCache<String, RenderOutput>(30)
 
 private fun ensurePlatform(context: Context) {
@@ -121,13 +115,40 @@ private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float): R
 }
 
 private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
-    val empty = RenderOutput(null, -1f, -1f)
+    // Passe 1 : rendu à RENDER_SCALE pour mesurer la largeur naturelle du contenu
+    // (une seule mesure ne remplit pas renderer.width : le système s'arrête au contenu).
+    val first = renderOnce(tex, widthPx, argb, density, RENDER_SCALE)
+    val measured = first.contentWidthUnits
+    if (measured <= 0) return first
+    // Passe 2 : scale ajusté pour que le contenu occupe toute la largeur disponible
+    // (rendu net, pas d'agrandissement bitmap). On garde une petite marge à droite.
+    val logicalWidth = widthPx / density
+    val targetScale = (logicalWidth / measured) * RENDER_SCALE
+    val second = renderOnce(tex, widthPx, argb, density, targetScale)
+    return if (second.bitmap != null) second else first
+}
+
+private class RenderOutput(
+    val bitmap: Bitmap?,
+    val staffTopY: Float,
+    val staffHeight: Float,
+    val contentWidthUnits: Double = 0.0
+)
+
+private fun renderOnce(
+    tex: String,
+    widthPx: Int,
+    argb: Int,
+    density: Float,
+    scale: Double
+): RenderOutput {
+    val empty = RenderOutput(null, -1f, -1f, 0.0)
     val settings = Settings().apply {
         core.engine = "android"
         // Sans ceci, les tranches sont "lazy" et ne sont jamais rendues hors
         // AlphaTabView (renderLazyPartial n'est appelé par personne) -> bitmap vide.
         core.enableLazyLoading = false
-        display.scale = RENDER_SCALE
+        display.scale = scale
         player.playerMode = alphaTab.PlayerMode.Disabled
         display.resources.mainGlyphColor = argb.toAlphaColor()
         display.resources.staffLineColor = argb.toAlphaColor()
@@ -155,6 +176,12 @@ private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: F
         // beginRender (AndroidCanvas) multiplie ensuite par highDpiFactor (= density).
         val tw = (args.totalWidth * density).roundToInt()
         val th = (args.totalHeight * density).roundToInt()
+        // Largeur réelle du contenu (unités layout x scale), padding droit exclu :
+        // sert à calculer le scale de la passe 2 qui remplit toute la largeur.
+        val contentRightUnits = renderer.boundsLookup
+            ?.staffSystems
+            ?.maxOfOrNull { sys -> sys.bars.maxOfOrNull { it.realBounds.x + it.realBounds.w } ?: 0.0 }
+            ?: 0.0
         val composed: Bitmap? = if (tw > 0 && th > 0 && slices.isNotEmpty()) {
             val bmp = Bitmap.createBitmap(tw, th, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
@@ -184,10 +211,11 @@ private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: F
                 result = RenderOutput(
                     bitmap = composed,
                     staffTopY = (lineAligned.y * density).toFloat(),
-                    staffHeight = (lineAligned.h * density).toFloat()
+                    staffHeight = (lineAligned.h * density).toFloat(),
+                    contentWidthUnits = contentRightUnits
                 )
             } else {
-                result = RenderOutput(composed, -1f, -1f)
+                result = RenderOutput(composed, -1f, -1f, contentRightUnits)
             }
         }
     }
@@ -268,14 +296,22 @@ private fun Color.toArgbCompat(): Int = android.graphics.Color.argb(
 )
 
 /**
- * Tap -> step : la bitmap est affichée avec FillWidth, d'où un facteur
- * bmpWidth / displayedWidth. staffTopY/staffHeight sont déjà en pixels bitmap.
+ * Tap -> step : la bitmap recadrée est affichée avec FillWidth (échelle uniforme
+ * s = displayedWidth / bmpWidth). L'Image est aligné TopStart : si la bitmap
+ * agrandie est plus haute que le conteneur, elle est rognée par le bas (le haut
+ * reste aligné, pas d'offset vertical à compenser).
+ * staffTopY/staffHeight sont déjà en pixels bitmap.
  * step 0 = ligne du haut, la hauteur couvre 4 interlignes = 8 steps.
  */
-private fun hitToStep(out: RenderOutput, bmp: Bitmap, tapY: Float, displayedWidth: Float): Int? {
+private fun hitToStep(
+    out: RenderOutput,
+    bmp: Bitmap,
+    tapY: Float,
+    displayedWidth: Float
+): Int? {
     if (out.staffTopY < 0 || out.staffHeight <= 0 || displayedWidth <= 0) return null
-    val displayToBmp = bmp.width / displayedWidth
-    val yInBmp = tapY * displayToBmp
+    val s = displayedWidth / bmp.width
+    val yInBmp = tapY / s
     val stepSize = out.staffHeight / 8f
     return ((yInBmp - out.staffTopY) / stepSize).roundToInt()
 }
