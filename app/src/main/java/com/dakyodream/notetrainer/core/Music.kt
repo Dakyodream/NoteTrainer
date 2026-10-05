@@ -65,7 +65,7 @@ object Notes {
         val sharpLetters = listOf('C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B')
         val sharpAcc = listOf(0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0)
         val flatLetters = listOf('C', 'D', 'D', 'E', 'E', 'F', 'G', 'G', 'A', 'A', 'B', 'B')
-        val flatAcc = listOf(0, -1, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0)
+        val flatAcc = listOf(0, -1, 0, -1, 0, 0, -1, 0, -1, 0, -1, 0)
         return if (preferSharps) {
             val letter = sharpLetters[pc]
             val acc = sharpAcc[pc]
