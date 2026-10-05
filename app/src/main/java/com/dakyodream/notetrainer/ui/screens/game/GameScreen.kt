@@ -1,5 +1,9 @@
 package com.dakyodream.notetrainer.ui.screens.game
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,7 +13,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +43,7 @@ fun GameScreen(
 ) {
     val state by engine.state.collectAsState()
     val context = LocalContext.current
+    val haptics = LocalHapticFeedback.current
     val audio = remember { AudioPlayer(context) }
     DisposableEffect(Unit) { onDispose { audio.release() } }
 
@@ -53,6 +60,13 @@ fun GameScreen(
 
     LaunchedEffect(state.isGameOver) {
         if (state.isGameOver) showGameOver = true
+    }
+
+    LaunchedEffect(state.isCorrect) {
+        // Retour haptique léger à chaque réponse validée (droit / faux)
+        if (state.isCorrect != null && !state.isGameOver) {
+            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        }
     }
 
     val ink = staffInkColor()
@@ -80,6 +94,10 @@ fun GameScreen(
             GameMode.EAR_TRAINING -> EarModeContent(engine, state, audio, ink, ::onStaffTap)
         }
 
+        AnimatedVisibility(
+            visible = state.feedbackRes != null,
+            enter = fadeIn(tween(200)) + slideInVertically(tween(250)) { it / 2 }
+        ) {
         state.feedbackRes?.let { res ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -104,6 +122,7 @@ fun GameScreen(
                     )
                 }
             }
+        }
         }
 
         Button(
