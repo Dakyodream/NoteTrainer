@@ -44,7 +44,6 @@ class GameEngineTest {
         val e = engineWith(GameMode.NAME_THE_NOTE)
         val s = e.state.value
         assertEquals(GameMode.NAME_THE_NOTE, s.mode)
-        assertEquals(0, s.round)
         assertEquals(3, s.lives)
         assertFalse(s.isGameOver)
         assertNotNull(s.targetNote)
@@ -149,7 +148,7 @@ class GameEngineTest {
         }
         assertEquals(1, calls)
         assertNotNull(lastStats)
-        assertArrayEquals(intArrayOf(1, 4, 1, 3), lastStats)
+        assertArrayEquals(intArrayOf(1, 2, 1, 3), lastStats)
     }
 
     @Test

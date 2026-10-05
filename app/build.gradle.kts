@@ -70,4 +70,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+    // org.json est stubbe sur JVM : sans ceci, les tests de persistance
+    // JSON passent a cote des donnees (methodes vides par defaut).
+    testImplementation("org.json:json:20240303")
 }

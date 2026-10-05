@@ -64,20 +64,16 @@ object Notes {
         val octave = midi / 12 - 1
         val sharpLetters = listOf('C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B')
         val sharpAcc = listOf(0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0)
-        val flatLetters = listOf('C', 'D', 'D', 'E', 'E', 'F', 'G', 'A', 'A', 'B', 'B', 'C')
-        val flatAcc = listOf(0, -1, 0, -1, 0, 0, -1, 0, -1, 0, -1, 0)
+        val flatLetters = listOf('C', 'D', 'D', 'E', 'E', 'F', 'G', 'G', 'A', 'A', 'B', 'B')
+        val flatAcc = listOf(0, -1, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0)
         return if (preferSharps) {
             val letter = sharpLetters[pc]
             val acc = sharpAcc[pc]
-            // B♯ : l'octave imprimée est celle du B, pas du C naturel
-            val oct = if (letter == 'B' && acc == 1) (midi - 1) / 12 - 1 else octave
-            Note(letter, acc, oct)
+            Note(letter, acc, octave)
         } else {
             val letter = flatLetters[pc]
             val acc = flatAcc[pc]
-            // C♭ : l'octave imprimée est celle du C, pas du B naturel
-            val oct = if (letter == 'C' && acc == -1) (midi + 1) / 12 - 1 else octave
-            Note(letter, acc, oct)
+            Note(letter, acc, octave)
         }
     }
 

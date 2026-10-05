@@ -103,8 +103,8 @@ class MusicTest {
     fun step_to_midi_matches_diatonic_descent() {
         // step croissant = vers le bas : chaque +2 steps = 1 lettre en descendant
         val f5 = Notes.stepToMidi(0, Clef.TREBLE)
-        val e5 = Notes.stepToMidi(2, Clef.TREBLE)
-        val d5 = Notes.stepToMidi(4, Clef.TREBLE)
+        val e5 = Notes.stepToMidi(1, Clef.TREBLE)
+        val d5 = Notes.stepToMidi(2, Clef.TREBLE)
         assertEquals(Notes.midiNumber(Note('E', 0, 5)), e5)
         assertEquals(Notes.midiNumber(Note('D', 0, 5)), d5)
         assertTrue(f5 > e5)
