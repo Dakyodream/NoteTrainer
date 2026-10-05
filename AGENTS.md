@@ -136,6 +136,24 @@ Toutes les chaînes UI dans `strings.xml` (fr) et `values-en/strings.xml`.
 Penser à mettre à jour les DEUX fichiers. Les titres de modes contiennent
 l'esperluette ➜ et le symbole ♩/🔊 voulus par l'utilisateur.
 
+## Confidentialité / RGPD
+
+- Promesse : 100 % hors-ligne, zéro permission, zéro collecte (voir `PRIVACY.md`).
+- `stats.json` est EXCLU des backups et transferts : `res/xml/backup_rules.xml`
+  (fullBackupContent) et `res/xml/data_extraction_rules.xml` (Android 12+).
+  Si un nouveau fichier de données est ajouté, l'exclure aussi.
+- `StatsFileStore` (core/Stats.kt) : testable sans Context, écriture atomique
+  (tmp + rename), `clear()` pour l'effacement, `exportJson()` pour l'export
+  (SAF `ActivityResultContracts.CreateDocument` — aucune permission requise).
+- Pages Confidentialité/Statistiques exposent exporter (JSON) et effacer
+  (dialog de confirmation) — chaînes fr + en obligatoires.
+
+## Tests / CI
+
+- Tests unitaires dans `app/src/test` (Music, GameEngine, StatsStore).
+- Coroutines dans les tests : `Dispatchers.setMain(UnconfinedTestDispatcher())`
+  (`kotlinx-coroutines-test`).
+
 ## Licence / crédits
 
 - NoteTrainer : MIT (voir LICENSE)
@@ -146,6 +164,6 @@ l'esperluette ➜ et le symbole ♩/🔊 voulus par l'utilisateur.
 
 - `gradle.properties` : `android.usesSdkInManifest.disallowed=false` (warning AGP
   non bloquant, disparaîtra en AGP 10)
-- Le build de ce dépôt est fait par l'utilisateur (pas de CI) — toujours finir par
+- Le build est fait par l'utilisateur — la CI GitHub Actions (`.github/workflows/android.yml`, JDK 17) valide chaque commit (tests + assembleDebug) et publie l'APK en artifact — toujours finir par
   `./gradlew :app:assembleDebug` ou demander à l'utilisateur de lancer le build
   et de renvoyer le log en cas d'erreur.

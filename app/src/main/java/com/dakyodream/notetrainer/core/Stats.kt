@@ -57,6 +57,28 @@ open class StatsFileStore(private val file: File) {
         }
     }
 
+    fun clear() {
+        file.delete()
+        File(file.parentFile, file.name + ".tmp").delete()
+    }
+
+    fun exportJson(records: List<GameRecord>): String {
+        val arr = JSONArray()
+        records.forEach { r ->
+            arr.put(JSONObject().apply {
+                put("ts", r.timestamp)
+                put("date", java.text.DateFormat.getDateTimeInstance().format(java.util.Date(r.timestamp)))
+                put("mode", r.mode.name)
+                put("difficulty", r.difficulty.name)
+                put("score", r.score)
+                put("roundsPlayed", r.roundsPlayed)
+                put("correctAnswers", r.correctAnswers)
+                put("wrongAnswers", r.wrongAnswers)
+            })
+        }
+        return arr.toString(2)
+    }
+
     fun save(records: List<GameRecord>) {
         try {
             val arr = JSONArray()

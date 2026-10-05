@@ -1,5 +1,7 @@
 package com.dakyodream.notetrainer.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +33,16 @@ fun StatsScreen(notation: Notation, onBack: () -> Unit) {
     val store = remember { StatsStore(context) }
     var records by remember { mutableStateOf(store.load()) }
     var period by remember { mutableStateOf(StatsPeriod.WEEK) }
+    var confirmErase by remember { mutableStateOf(false) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            context.contentResolver.openOutputStream(uri)?.use { os ->
+                os.write(store.exportJson(records).toByteArray())
+            }
+        }
+    }
 
     val cutoff = remember(period) {
         if (period == StatsPeriod.ALL) 0L
@@ -99,6 +111,36 @@ fun StatsScreen(notation: Notation, onBack: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { exportLauncher.launch("notetrainer-stats.json") }) {
+                Text(stringResource(R.string.stats_export))
+            }
+            OutlinedButton(onClick = { confirmErase = true }) {
+                Text(
+                    stringResource(R.string.stats_erase),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+        if (confirmErase) {
+            AlertDialog(
+                onDismissRequest = { confirmErase = false },
+                title = { Text(stringResource(R.string.stats_erase_confirm_title)) },
+                text = { Text(stringResource(R.string.stats_erase_confirm_body)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        store.clear()
+                        records = mutableListOf()
+                        confirmErase = false
+                    }) { Text(stringResource(R.string.stats_erase_yes)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmErase = false }) {
+                        Text(stringResource(R.string.stats_erase_no))
+                    }
+                }
+            )
+        }
         Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.back))
         }

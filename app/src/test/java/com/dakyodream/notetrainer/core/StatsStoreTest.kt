@@ -95,6 +95,28 @@ class StatsStoreTest {
     }
 
     @Test
+    fun clear_deletesFileAndTmp() {
+        val (store, dir) = newStore()
+        store.save(listOf(record()))
+        val file = File(dir, "stats.json")
+        assertTrue(file.exists())
+        store.clear()
+        assertFalse(file.exists())
+        assertFalse(File(dir, "stats.json.tmp").exists())
+        assertTrue(store.load().isEmpty())
+    }
+
+    @Test
+    fun exportJson_containsRecords() {
+        val (store, _) = newStore()
+        val json = store.exportJson(listOf(record(ts = 42L, score = 3, rounds = 4)))
+        assertTrue(json.contains("\"ts\": 42"))
+        assertTrue(json.contains("\"score\": 3"))
+        assertTrue(json.contains("NAME_THE_NOTE"))
+        assertTrue(json.contains("\"correctAnswers\": 3"))
+    }
+
+    @Test
     fun constants_weekMonthBounds() {
         assertEquals(7L * 24 * 3600 * 1000, StatsStore.WEEK_MS)
         assertEquals(30L * 24 * 3600 * 1000, StatsStore.MONTH_MS)

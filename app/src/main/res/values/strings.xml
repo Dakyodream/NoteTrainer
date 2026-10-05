@@ -81,6 +81,12 @@
     <string name="stats_diff_score">%1$s : %2$d pt(s)</string>
     <string name="stats_none">Aucune partie enregistrée pour l\'instant.\n\nJouez une partie complète pour voir vos progrès !</string>
     <string name="stats_offline">🔒 100 %% hors ligne : vos statistiques restent sur votre appareil, aucune donnée n\'est collectée.</string>
+    <string name="stats_export">🖾 Exporter mes stats (JSON)</string>
+    <string name="stats_erase">🖡 Effacer mes donn\u00e9es</string>
+    <string name="stats_erase_confirm_title">Effacer toutes les donn\u00e9es ?</string>
+    <string name="stats_erase_confirm_body">Toutes vos statistiques seront d\u00e9finitivement supprim\u00e9es de votre appareil. Cette action est irr\u00e9versible.</string>
+    <string name="stats_erase_yes">Effacer</string>
+    <string name="stats_erase_no">Annuler</string>
     <string name="stats_per_mode">Par mode de jeu</string>
 
     <!-- Aide -->
