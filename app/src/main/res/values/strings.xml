@@ -64,7 +64,7 @@
     <string name="credits">👤 Crédits</string>
     <string name="license">⚖️ Licence</string>
     <string name="privacy">🔒 Confidentialité</string>
-    <string name="privacy_body">NoteTrainer est 100 % hors-ligne : aucune donnée n'est collectée, transmise ou vendue. L'application ne demande aucune permission Android.\n\nVos scores sont enregistrés uniquement sur votre appareil, dans le stockage privé de l'application, et sont exclus des sauvegardes Android (adb, cloud, transfert d'appareil).\n\nVos droits (RGPD) :\n• Exporter vos statistiques (bouton dans la page Statistiques)\n• Effacer toutes vos données (bouton dans la page Statistiques)\n\nDésinstaller l'application supprime également toutes les données.\n\nCode source vérifiable : le projet est open source (MIT), le manifeste ne déclare aucune permission et aucune dépendance réseau n'est présente.</string>
+    <string name="privacy_body">NoteTrainer est 100 % hors-ligne : aucune donnée n\'est collectée, transmise ou vendue. L\'application ne demande aucune permission Android.\n\nVos scores sont enregistrés uniquement sur votre appareil, dans le stockage privé de l\'application, et sont exclus des sauvegardes Android (adb, cloud, transfert d\'appareil).\n\nVos droits (RGPD) :\n• Exporter vos statistiques (bouton dans la page Statistiques)\n• Effacer toutes vos données (bouton dans la page Statistiques)\n\nDésinstaller l\'application supprime également toutes les données.\n\nCode source vérifiable : le projet est open source (MIT), le manifeste ne déclare aucune permission et aucune dépendance réseau n\'est présente.</string>
     <string name="back">← Retour au menu</string>
 
     <!-- Statistiques -->

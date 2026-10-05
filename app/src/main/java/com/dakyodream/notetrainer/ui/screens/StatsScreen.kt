@@ -20,6 +20,7 @@ import com.dakyodream.notetrainer.core.GameMode
 import com.dakyodream.notetrainer.core.GameRecord
 import com.dakyodream.notetrainer.core.Notation
 import com.dakyodream.notetrainer.core.Notes
+import com.dakyodream.notetrainer.core.StatsFileStore
 import com.dakyodream.notetrainer.core.StatsStore
 
 private enum class StatsPeriod(@JvmField val days: Int) {
@@ -46,7 +47,7 @@ fun StatsScreen(notation: Notation, onBack: () -> Unit) {
 
     val cutoff = remember(period) {
         if (period == StatsPeriod.ALL) 0L
-        else System.currentTimeMillis() - period.days * StatsStore.DAY_MS
+        else System.currentTimeMillis() - period.days * StatsFileStore.DAY_MS
     }
     val filtered = remember(records, cutoff) {
         records.filter { it.timestamp >= cutoff }
