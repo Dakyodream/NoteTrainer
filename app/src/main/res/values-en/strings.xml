@@ -34,6 +34,10 @@
 
     <string name="play">▶ Play</string>
     <string name="quit">Quit</string>
+    <string name="quit_confirm_title">Quit the game?</string>
+    <string name="quit_confirm_body">Your progress in this game will be lost.</string>
+    <string name="quit_yes">Quit</string>
+    <string name="quit_no">Stay</string>
     <string name="lives">❤️ %1$d</string>
     <string name="round">Round %1$d/%2$d</string>
     <string name="score">⭐ %1$d</string>

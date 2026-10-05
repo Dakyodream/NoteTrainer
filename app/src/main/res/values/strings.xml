@@ -40,6 +40,10 @@
     <!-- Jeu -->
     <string name="play">▶ Jouer</string>
     <string name="quit">Quitter</string>
+    <string name="quit_confirm_title">Quitter la partie ?</string>
+    <string name="quit_confirm_body">Votre progression dans cette partie sera perdue.</string>
+    <string name="quit_yes">Quitter</string>
+    <string name="quit_no">Rester</string>
     <string name="lives">❤️ %1$d</string>
     <string name="round">Manche %1$d/%2$d</string>
     <string name="score">⭐ %1$d</string>

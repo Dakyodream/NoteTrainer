@@ -49,6 +49,7 @@ fun GameScreen(
 
     var selectedAccidental by remember { mutableStateOf(0) }
     var showGameOver by remember { mutableStateOf(false) }
+    var confirmQuit by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.targetNote, state.round) {
         if (mode == GameMode.EAR_TRAINING && state.targetNote != null && !state.hasPlayedTarget) {
@@ -87,7 +88,7 @@ fun GameScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatusRow(state = state, onExit = onExit)
+        StatusRow(state = state, onExit = { if (!state.isGameOver) confirmQuit = true else onExit() })
 
         when (mode) {
             GameMode.NAME_THE_NOTE -> NameModeContent(engine, state, ink)
@@ -133,6 +134,24 @@ fun GameScreen(
         ) {
             Text(stringResource(R.string.next_note))
         }
+    }
+
+    if (confirmQuit) {
+        AlertDialog(
+            onDismissRequest = { confirmQuit = false },
+            title = { Text(stringResource(R.string.quit_confirm_title)) },
+            text = { Text(stringResource(R.string.quit_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = { confirmQuit = false; onExit() }) {
+                    Text(stringResource(R.string.quit_yes), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmQuit = false }) {
+                    Text(stringResource(R.string.quit_no))
+                }
+            }
+        )
     }
 
     if (showGameOver) {
