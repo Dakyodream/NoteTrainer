@@ -1,6 +1,9 @@
 package com.dakyodream.notetrainer.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,27 +72,45 @@ fun MenuScreen(
             IconButton(onClick = { drawerOpen = true }) {
                 Icon(Icons.Filled.Menu, contentDescription = "Menu")
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                ThemeMode.entries.forEach { t ->
-                    val icon: ImageVector = when (t) {
-                        ThemeMode.LIGHT -> Icons.Filled.LightMode
-                        ThemeMode.DARK -> Icons.Filled.DarkMode
-                        ThemeMode.SYSTEM -> Icons.Filled.Settings
-                    }
-                    val label = stringResource(
-                        when (t) {
-                            ThemeMode.LIGHT -> R.string.theme_light
-                            ThemeMode.DARK -> R.string.theme_dark
-                            ThemeMode.SYSTEM -> R.string.theme_system
-                        }
-                    )
-                    FilterChip(
-                        selected = themeMode == t,
-                        onClick = { onThemeChange(t) },
-                        label = { },
-                        leadingIcon = { Icon(icon, contentDescription = label, modifier = Modifier.size(18.dp)) }
-                    )
+            // Bouton unique : cycle clair -> sombre -> système -> clair
+            val nextMode = when (themeMode) {
+                ThemeMode.LIGHT -> ThemeMode.DARK
+                ThemeMode.DARK -> ThemeMode.SYSTEM
+                ThemeMode.SYSTEM -> ThemeMode.LIGHT
+            }
+            val currentIcon: ImageVector = when (themeMode) {
+                ThemeMode.LIGHT -> Icons.Filled.LightMode
+                ThemeMode.DARK -> Icons.Filled.DarkMode
+                ThemeMode.SYSTEM -> Icons.Filled.Settings
+            }
+            val currentLabel = stringResource(
+                when (themeMode) {
+                    ThemeMode.LIGHT -> R.string.theme_light
+                    ThemeMode.DARK -> R.string.theme_dark
+                    ThemeMode.SYSTEM -> R.string.theme_system
                 }
+            )
+            val nextLabel = stringResource(
+                when (nextMode) {
+                    ThemeMode.LIGHT -> R.string.theme_light
+                    ThemeMode.DARK -> R.string.theme_dark
+                    ThemeMode.SYSTEM -> R.string.theme_system
+                }
+            )
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { onThemeChange(nextMode) },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    currentIcon,
+                    contentDescription = "$currentLabel → $nextLabel",
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
 
