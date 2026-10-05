@@ -270,6 +270,7 @@ private fun PlaceModeContent(
         clef = state.clef,
         notes = displayNotes,
         inkColor = ink,
+        heightDp = 460.dp,
         onStaffTap = if (state.isCorrect == null) onStaffTap else null
     )
 }

@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Note
@@ -97,13 +98,13 @@ private fun ensurePlatform(context: Context) {
     }
 }
 
-private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
+private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float, heightFactor: Float): RenderOutput {
     val empty = RenderOutput(null, -1f, -1f)
     if (widthPx <= 0 || density <= 0) return empty
-    val cacheKey = "$tex|$widthPx|$argb|$density"
+    val cacheKey = "$tex|$widthPx|$argb|$density|$heightFactor"
     scoreCache.get(cacheKey)?.let { return it }
     return try {
-        val out = renderScoreInternal(tex, widthPx, argb, density)
+        val out = renderScoreInternal(tex, widthPx, argb, density, heightFactor)
         if (out.bitmap != null) {
             scoreCache.put(cacheKey, out)
         }
@@ -114,16 +115,23 @@ private fun renderScore(tex: String, widthPx: Int, argb: Int, density: Float): R
     }
 }
 
-private fun renderScoreInternal(tex: String, widthPx: Int, argb: Int, density: Float): RenderOutput {
+private fun renderScoreInternal(
+    tex: String,
+    widthPx: Int,
+    argb: Int,
+    density: Float,
+    heightFactor: Float
+): RenderOutput {
     // Passe 1 : rendu à RENDER_SCALE pour mesurer la largeur naturelle du contenu
     // (une seule mesure ne remplit pas renderer.width : le système s'arrête au contenu).
     val first = renderOnce(tex, widthPx, argb, density, RENDER_SCALE)
     val measured = first.contentWidthUnits
     if (measured <= 0) return first
     // Passe 2 : scale ajusté pour que le contenu occupe toute la largeur disponible
-    // (rendu net, pas d'agrandissement bitmap). On garde une petite marge à droite.
+    // (rendu net, pas d'agrandissement bitmap), multiplié par le facteur de zoom
+    // vertical demandé par l'appelant (1.0 = normal, 2.0 = portée ×2).
     val logicalWidth = widthPx / density
-    val targetScale = (logicalWidth / measured) * RENDER_SCALE
+    val targetScale = (logicalWidth / measured) * RENDER_SCALE * heightFactor
     val second = renderOnce(tex, widthPx, argb, density, targetScale)
     return if (second.bitmap != null) second else first
 }
@@ -243,21 +251,23 @@ fun StaffView(
     notes: List<StaffNote>,
     modifier: Modifier = Modifier,
     inkColor: Color = Color(0xFF1B1B1B),
+    heightDp: Dp = 230.dp,
     onStaffTap: ((StaffHitResult) -> Unit)? = null
 ) {
     val argb = inkColor.toArgbCompat()
     val tex = remember(clef, notes) { texFor(clef, notes) }
+    val heightFactor = heightDp.value / 230f
     val context = LocalContext.current
     val density = LocalDensity.current.density
     remember(context) { ensurePlatform(context); true }
 
-    BoxWithConstraints(modifier = modifier.fillMaxWidth().height(230.dp)) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth().height(heightDp)) {
         val widthPx = constraints.maxWidth
         var output by remember(tex) { mutableStateOf<RenderOutput?>(null) }
 
-        LaunchedEffect(tex, widthPx, argb, density) {
+        LaunchedEffect(tex, widthPx, argb, density, heightFactor) {
             output = withContext(Dispatchers.Default) {
-                renderScore(tex, widthPx, argb, density)
+                renderScore(tex, widthPx, argb, density, heightFactor)
             }
         }
 
@@ -268,7 +278,7 @@ fun StaffView(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(230.dp)
+                        .height(heightDp)
                         .let { m ->
                             if (onStaffTap != null) {
                                 m.pointerInput(tex) {
