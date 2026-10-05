@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exclut les stats des backups : elles sont locales par conception, la
+     promesse "zéro donnée collectée" inclut les mécanismes de transfert
+     adb/cloud. L'utilisateur garde la main via l'export manuel. -->
+<full-backup-content>
+    <exclude domain="file" path="stats.json" />
+</full-backup-content>

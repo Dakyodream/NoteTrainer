@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ : mêmes exclusions que backup_rules (transferts d'appareil
+     et backups cloud). Les stats ne quittent jamais l'appareil. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="stats.json" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="stats.json" />
+    </device-transfer>
+</data-extraction-rules>

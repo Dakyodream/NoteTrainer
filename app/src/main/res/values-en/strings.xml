@@ -56,6 +56,8 @@
     <string name="help">ℹ️ Help</string>
     <string name="credits">👤 Credits</string>
     <string name="license">⚖️ License</string>
+    <string name="privacy">🔒 Privacy</string>
+    <string name="privacy_body">NoteTrainer is 100% offline: no data is collected, transmitted or sold. The app requests no Android permissions.\n\nYour scores are stored only on your device, in the app\'s private storage, and are excluded from Android backups (adb, cloud, device transfer).\n\nYour rights (GDPR):\n• Export your statistics (button in the Statistics page)\n• Erase all your data (button in the Statistics page)\n\nUninstalling the app also deletes all data.\n\nVerifiable open source: the project is open source (MIT), the manifest declares no permissions and no network dependency is present.</string>
     <string name="back">← Back to menu</string>
 
     <string name="stats_title">📊 Statistics</string>

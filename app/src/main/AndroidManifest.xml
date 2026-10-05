@@ -3,9 +3,11 @@
 
     <application
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        
         android:supportsRtl="true"
         android:theme="@style/Theme.NoteTrainer">
         <activity
@@ -18,5 +20,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

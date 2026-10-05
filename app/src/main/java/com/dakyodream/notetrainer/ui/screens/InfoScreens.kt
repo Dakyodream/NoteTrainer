@@ -34,6 +34,15 @@ fun CreditsScreen(onBack: () -> Unit) {
 }
 
 @Composable
+fun PrivacyScreen(onBack: () -> Unit) {
+    SimpleInfoScreen(
+        title = stringResource(R.string.privacy),
+        body = stringResource(R.string.privacy_body),
+        onBack = onBack
+    )
+}
+
+@Composable
 fun LicenseScreen(onBack: () -> Unit) {
     SimpleInfoScreen(
         title = stringResource(R.string.license),

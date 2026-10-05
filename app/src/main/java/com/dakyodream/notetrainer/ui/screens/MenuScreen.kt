@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.*
@@ -46,6 +47,7 @@ fun MenuScreen(
     onShowCredits: () -> Unit,
     onShowInfo: () -> Unit,
     onShowLicense: () -> Unit,
+    onShowPrivacy: () -> Unit,
     onShowStats: () -> Unit
 ) {
     var selectedMode by remember { mutableStateOf(GameMode.NAME_THE_NOTE) }
@@ -210,6 +212,7 @@ fun MenuScreen(
                 DrawerItem(Icons.Filled.Info, stringResource(R.string.help)) { onShowInfo(); drawerOpen = false }
                 DrawerItem(Icons.Filled.Person, stringResource(R.string.credits)) { onShowCredits(); drawerOpen = false }
                 DrawerItem(Icons.Filled.Gavel, stringResource(R.string.license)) { onShowLicense(); drawerOpen = false }
+                DrawerItem(Icons.Filled.PrivacyTip, stringResource(R.string.privacy)) { onShowPrivacy(); drawerOpen = false }
                 DrawerItem(Icons.Filled.BarChart, stringResource(R.string.stats_title)) { onShowStats(); drawerOpen = false }
             }
         }
