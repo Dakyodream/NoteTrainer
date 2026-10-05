@@ -63,9 +63,10 @@ fun GameScreen(
     }
 
     LaunchedEffect(state.isCorrect) {
-        // Retour haptique léger à chaque réponse validée (droit / faux)
+        // Retour haptique + sonore à chaque réponse (droit / faux)
         if (state.isCorrect != null && !state.isGameOver) {
             haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            audio.playResultSound(state.isCorrect == true)
         }
     }
 

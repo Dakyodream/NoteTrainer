@@ -61,6 +61,57 @@ class AudioPlayer(context: Context) {
         }
     }
 
+    /**
+     * Bips de validation générés à la volée (aucun fichier embarqué).
+     * Joue le son de la note en cas de bonne réponse ; un bip grave en cas d'erreur.
+     */
+    fun playResultSound(correct: Boolean) {
+        val key = if (correct) "fx_ok" else "fx_ko"
+        val existing = soundIds[key]
+        if (existing != null) {
+            soundPool.play(existing, 0.8f, 0.8f, 1, 0, 1f)
+            return
+        }
+        if (loading.add(key)) {
+            scope.launch {
+                val id = synthesizeFxAndLoad(key)
+                loading.remove(key)
+                if (id != null) {
+                    soundIds[key] = id
+                    isReady = true
+                    soundPool.play(id, 0.8f, 0.8f, 1, 0, 1f)
+                }
+            }
+        }
+    }
+
+    private suspend fun synthesizeFxAndLoad(key: String): Int? =
+        withContext(Dispatchers.IO) {
+            try {
+                val f = File.createTempFile("fx_", ".wav", appContext.cacheDir)
+                FileOutputStream(f).use {
+                    val samples = if (key == "fx_ok") {
+                        // Deux notes ascendantes (do-mi), effet "correct"
+                        concat(synthesizeSine(523.25, 0.09), synthesizeSine(659.25, 0.14))
+                    } else {
+                        // Bip grave bref, effet "erreur"
+                        synthesizeSine(196.0, 0.18)
+                    }
+                    it.write(pcmToWav(samples, SAMPLE_RATE))
+                }
+                soundPool.load(f.absolutePath, 1)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+    private fun concat(a: ShortArray, b: ShortArray): ShortArray {
+        val out = ShortArray(a.size + b.size)
+        a.copyInto(out)
+        b.copyInto(out, a.size)
+        return out
+    }
+
     fun release() {
         soundPool.release()
     }
