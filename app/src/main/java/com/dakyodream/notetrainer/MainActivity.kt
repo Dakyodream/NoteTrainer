@@ -23,6 +23,7 @@ import com.dakyodream.notetrainer.core.GameEngine
 import com.dakyodream.notetrainer.core.GameMode
 import com.dakyodream.notetrainer.core.GameRecord
 import com.dakyodream.notetrainer.core.Notation
+import com.dakyodream.notetrainer.core.SettingsStore
 import com.dakyodream.notetrainer.core.StatsStore
 import com.dakyodream.notetrainer.ui.NoteTrainerTheme
 import com.dakyodream.notetrainer.ui.ThemeMode
@@ -46,9 +47,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NoteTrainerRoot() {
-    var themeMode by rememberSaveable { mutableStateOf(ThemeMode.SYSTEM) }
+    val context = LocalContext.current
+    val settings = remember { SettingsStore(context) }
+    var themeMode by rememberSaveable {
+        mutableStateOf(settings.loadThemeMode()?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM)
+    }
     NoteTrainerTheme(themeMode = themeMode) {
-        NoteTrainerApp(themeMode = themeMode, onThemeChange = { themeMode = it })
+        NoteTrainerApp(themeMode = themeMode, onThemeChange = { mode ->
+            themeMode = mode
+            settings.saveThemeMode(mode.name)
+        })
     }
 }
 
@@ -56,8 +64,11 @@ fun NoteTrainerRoot() {
 fun NoteTrainerApp(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
     val nav = rememberNavController()
     val engine: GameEngine = viewModel()
-    var notation by rememberSaveable { mutableStateOf(Notation.FRENCH) }
     val context = LocalContext.current
+    val settings = remember { SettingsStore(context) }
+    var notation by rememberSaveable {
+        mutableStateOf(settings.loadNotation()?.let { runCatching { Notation.valueOf(it) }.getOrNull() } ?: Notation.FRENCH)
+    }
     val statsStore = remember { StatsStore(context) }
 
     Surface(
@@ -86,7 +97,10 @@ fun NoteTrainerApp(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
                 themeMode = themeMode,
                 onThemeChange = onThemeChange,
                 notation = notation,
-                onNotationChange = { notation = it },
+                onNotationChange = { n ->
+                    notation = n
+                    settings.saveNotation(n.name)
+                },
                 onStartGame = { mode, difficulty, clef, n ->
                     engine.startGame(mode, difficulty, clef, n)
                     nav.navigate("game/${mode.name}")
