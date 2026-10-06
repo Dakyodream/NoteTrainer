@@ -65,6 +65,7 @@ internal fun EarModeContent(
         clef = state.clef,
         notes = displayNotes,
         inkColor = ink,
+        heightDp = 250.dp,
         onStaffTap = if (state.isCorrect == null) onStaffTap else null
     )
 }

@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,7 +49,8 @@ fun MenuScreen(
     onShowInfo: () -> Unit,
     onShowLicense: () -> Unit,
     onShowPrivacy: () -> Unit,
-    onShowStats: () -> Unit
+    onShowStats: () -> Unit,
+    onShowGuide: () -> Unit
 ) {
     var selectedMode by remember { mutableStateOf(GameMode.NAME_THE_NOTE) }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
@@ -74,45 +76,37 @@ fun MenuScreen(
             IconButton(onClick = { drawerOpen = true }) {
                 Icon(Icons.Filled.Menu, contentDescription = "Menu")
             }
-            // Bouton unique : cycle clair -> sombre -> système -> clair
-            val nextMode = when (themeMode) {
-                ThemeMode.LIGHT -> ThemeMode.DARK
-                ThemeMode.DARK -> ThemeMode.SYSTEM
-                ThemeMode.SYSTEM -> ThemeMode.LIGHT
-            }
-            val currentIcon: ImageVector = when (themeMode) {
-                ThemeMode.LIGHT -> Icons.Filled.LightMode
-                ThemeMode.DARK -> Icons.Filled.DarkMode
-                ThemeMode.SYSTEM -> Icons.Filled.Settings
-            }
-            val currentLabel = stringResource(
-                when (themeMode) {
-                    ThemeMode.LIGHT -> R.string.theme_light
-                    ThemeMode.DARK -> R.string.theme_dark
-                    ThemeMode.SYSTEM -> R.string.theme_system
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ThemeMode.entries.forEach { t ->
+                    val icon: ImageVector = when (t) {
+                        ThemeMode.LIGHT -> Icons.Filled.LightMode
+                        ThemeMode.DARK -> Icons.Filled.DarkMode
+                        ThemeMode.SYSTEM -> Icons.Filled.Settings
+                    }
+                    val isSelected = themeMode == t
+                    val label = stringResource(
+                        when (t) {
+                            ThemeMode.LIGHT -> R.string.theme_light
+                            ThemeMode.DARK -> R.string.theme_dark
+                            ThemeMode.SYSTEM -> R.string.theme_system
+                        }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                            .clickable { onThemeChange(t) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
-            )
-            val nextLabel = stringResource(
-                when (nextMode) {
-                    ThemeMode.LIGHT -> R.string.theme_light
-                    ThemeMode.DARK -> R.string.theme_dark
-                    ThemeMode.SYSTEM -> R.string.theme_system
-                }
-            )
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .clickable { onThemeChange(nextMode) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    currentIcon,
-                    contentDescription = "$currentLabel → $nextLabel",
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
             }
         }
 
@@ -209,6 +203,7 @@ fun MenuScreen(
                     )
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                DrawerItem(Icons.AutoMirrored.Filled.MenuBook, stringResource(R.string.guide_title)) { onShowGuide(); drawerOpen = false }
                 DrawerItem(Icons.Filled.Info, stringResource(R.string.help)) { onShowInfo(); drawerOpen = false }
                 DrawerItem(Icons.Filled.Person, stringResource(R.string.credits)) { onShowCredits(); drawerOpen = false }
                 DrawerItem(Icons.Filled.Gavel, stringResource(R.string.license)) { onShowLicense(); drawerOpen = false }

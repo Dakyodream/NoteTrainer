@@ -31,6 +31,7 @@ import com.dakyodream.notetrainer.ui.screens.CreditsScreen
 import com.dakyodream.notetrainer.ui.screens.game.GameScreen
 import com.dakyodream.notetrainer.ui.screens.InfoScreen
 import com.dakyodream.notetrainer.ui.screens.LicenseScreen
+import com.dakyodream.notetrainer.ui.screens.NoteGuideScreen
 import com.dakyodream.notetrainer.ui.screens.PrivacyScreen
 import com.dakyodream.notetrainer.ui.screens.MenuScreen
 import com.dakyodream.notetrainer.ui.screens.StatsScreen
@@ -109,13 +110,15 @@ fun NoteTrainerApp(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
                 onShowInfo = { nav.navigate("info") },
                 onShowLicense = { nav.navigate("license") },
                 onShowStats = { nav.navigate("stats") },
-                onShowPrivacy = { nav.navigate("privacy") }
+                onShowPrivacy = { nav.navigate("privacy") },
+                onShowGuide = { nav.navigate("guide") }
             )
         }
         composable("game/{mode}") { backStack ->
             val mode = GameMode.valueOf(backStack.arguments?.getString("mode") ?: GameMode.NAME_THE_NOTE.name)
             GameScreen(engine = engine, mode = mode, onExit = { nav.popBackStack() })
         }
+        composable("guide") { NoteGuideScreen(notation = notation, onBack = { nav.popBackStack() }) }
         composable("credits") { CreditsScreen(onBack = { nav.popBackStack() }) }
         composable("info") { InfoScreen(onBack = { nav.popBackStack() }) }
         composable("license") { LicenseScreen(onBack = { nav.popBackStack() }) }

@@ -33,7 +33,8 @@ internal fun NameModeContent(
     StaffView(
         clef = state.clef,
         notes = listOf(StaffNote(target, color = noteColor)),
-        inkColor = ink
+        inkColor = ink,
+        heightDp = 250.dp
     )
     Text(
         stringResource(R.string.mode_name_prompt),

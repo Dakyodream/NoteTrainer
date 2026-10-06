@@ -85,6 +85,9 @@
     <string name="stats_diff_breakdown">Meilleurs scores par difficulté :</string>
     <string name="stats_diff_score">%1$s : %2$d pt(s)</string>
     <string name="stats_none">Aucune partie enregistrée pour l\'instant.\n\nJouez une partie complète pour voir vos progrès !</string>
+    <string name="guide_title">🎵 Guide des notes</string>
+    <string name="guide_subtitle">Touchez une note pour l\'écouter</string>
+    <string name="guide_c4_note">Repère : C4 = Do3 = do du milieu (midi 60)</string>
     <string name="stats_offline">🔒 100 %% hors ligne : vos statistiques restent sur votre appareil, aucune donnée n\'est collectée.</string>
     <string name="stats_export">🖾 Exporter mes stats (JSON)</string>
     <string name="stats_erase">🖡 Effacer mes donn\u00e9es</string>

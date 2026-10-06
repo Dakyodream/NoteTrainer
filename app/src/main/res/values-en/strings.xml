@@ -77,6 +77,9 @@
     <string name="stats_diff_breakdown">Best scores by difficulty:</string>
     <string name="stats_diff_score">%1$s: %2$d pt(s)</string>
     <string name="stats_none">No game recorded yet.\n\nPlay a full game to see your progress!</string>
+    <string name="guide_title">🎵 Note Guide</string>
+    <string name="guide_subtitle">Tap a note to hear its sound</string>
+    <string name="guide_c4_note">Reference: C4 = Middle C (MIDI 60)</string>
     <string name="stats_offline">🔒 100%% offline: your statistics stay on your device, no data collected.</string>
     <string name="stats_export">🖾 Export my stats (JSON)</string>
     <string name="stats_erase">🖡 Erase my data</string>
