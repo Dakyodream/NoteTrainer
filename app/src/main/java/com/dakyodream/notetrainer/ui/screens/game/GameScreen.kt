@@ -64,7 +64,6 @@ fun GameScreen(
     }
 
     LaunchedEffect(state.isCorrect) {
-        // Retour haptique + sonore à chaque réponse (droit / faux)
         if (state.isCorrect != null && !state.isGameOver) {
             haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             audio.playResultSound(state.isCorrect == true)
@@ -84,55 +83,61 @@ fun GameScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp)
+            .padding(vertical = 16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatusRow(state = state, onExit = { if (!state.isGameOver) confirmQuit = true else onExit() })
+        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+            StatusRow(state = state, onExit = { if (!state.isGameOver) confirmQuit = true else onExit() })
+        }
 
-        when (mode) {
-            GameMode.NAME_THE_NOTE -> NameModeContent(engine, state, ink)
-            GameMode.PLACE_THE_NOTE -> PlaceModeContent(engine, state, ink, selectedAccidental, { selectedAccidental = it }, ::onStaffTap)
-            GameMode.EAR_TRAINING -> EarModeContent(engine, state, audio, ink, ::onStaffTap)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            when (mode) {
+                GameMode.NAME_THE_NOTE -> NameModeContent(engine, state, ink)
+                GameMode.PLACE_THE_NOTE -> PlaceModeContent(engine, state, ink, selectedAccidental, { selectedAccidental = it }, ::onStaffTap)
+                GameMode.EAR_TRAINING -> EarModeContent(engine, state, audio, ink, ::onStaffTap)
+            }
         }
 
         AnimatedVisibility(
             visible = state.feedbackRes != null,
+            modifier = Modifier.padding(horizontal = 16.dp),
             enter = fadeIn(tween(200)) + slideInVertically(tween(250)) { it / 2 }
         ) {
-        state.feedbackRes?.let { res ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = if (state.feedbackExtra.isNotEmpty())
-                        stringResource(res, state.feedbackExtra)
-                    else stringResource(res),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
-                    textAlign = TextAlign.Center
-                )
-                val bonus = state.lastBonusSec
-                if (bonus != null && bonus > 0) {
+            state.feedbackRes?.let { res ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = stringResource(R.string.time_bonus, bonus),
-                        fontSize = 16.sp,
+                        text = if (state.feedbackExtra.isNotEmpty())
+                            stringResource(res, state.feedbackExtra)
+                        else stringResource(res),
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E7D32)
+                        color = if (state.isCorrect == true) Color(0xFF2E7D32) else Color(0xFFC62828),
+                        textAlign = TextAlign.Center
                     )
+                    val bonus = state.lastBonusSec
+                    if (bonus != null && bonus > 0) {
+                        Text(
+                            text = stringResource(R.string.time_bonus, bonus),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2E7D32)
+                        )
+                    }
                 }
             }
         }
-        }
 
-        Button(
-            onClick = { engine.advance() },
-            enabled = state.isCorrect != null && !state.isGameOver,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(stringResource(R.string.next_note))
+        Box(modifier = Modifier.padding(horizontal = 16.dp).align(Alignment.CenterHorizontally)) {
+            Button(
+                onClick = { engine.advance() },
+                enabled = state.isCorrect != null && !state.isGameOver
+            ) {
+                Text(stringResource(R.string.next_note))
+            }
         }
     }
 

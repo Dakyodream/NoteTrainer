@@ -108,6 +108,7 @@ private fun renderScoreInternal(
         core.engine = "android"
         core.enableLazyLoading = false
         display.scale = RENDER_SCALE
+        display.padding = alphaTab.collections.DoubleList(0.0, 10.0, 0.0, 10.0)
         player.playerMode = alphaTab.PlayerMode.Disabled
         display.resources.mainGlyphColor = argb.toAlphaColor()
         display.resources.staffLineColor = argb.toAlphaColor()
