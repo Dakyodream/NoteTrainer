@@ -61,11 +61,62 @@ class AudioPlayer(context: Context) {
         }
     }
 
+    /**
+     * Bips de validation générés à la volée (aucun fichier embarqué).
+     * Joue le son de la note en cas de bonne réponse ; un bip grave en cas d'erreur.
+     */
+    fun playResultSound(correct: Boolean) {
+        val key = if (correct) "fx_ok" else "fx_ko"
+        val existing = soundIds[key]
+        if (existing != null) {
+            soundPool.play(existing, 0.8f, 0.8f, 1, 0, 1f)
+            return
+        }
+        if (loading.add(key)) {
+            scope.launch {
+                val id = synthesizeFxAndLoad(key)
+                loading.remove(key)
+                if (id != null) {
+                    soundIds[key] = id
+                    isReady = true
+                    soundPool.play(id, 0.8f, 0.8f, 1, 0, 1f)
+                }
+            }
+        }
+    }
+
+    private suspend fun synthesizeFxAndLoad(key: String): Int? =
+        withContext(Dispatchers.IO) {
+            try {
+                val f = File.createTempFile("fx_", ".wav", appContext.cacheDir)
+                FileOutputStream(f).use {
+                    val samples = if (key == "fx_ok") {
+                        // Deux notes ascendantes (do-mi), effet "correct"
+                        concat(synthesizeSine(523.25, 0.09), synthesizeSine(659.25, 0.14))
+                    } else {
+                        // Bip grave bref, effet "erreur"
+                        synthesizeSine(196.0, 0.18)
+                    }
+                    it.write(pcmToWav(samples, SAMPLE_RATE))
+                }
+                soundPool.load(f.absolutePath, 1)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+    private fun concat(a: ShortArray, b: ShortArray): ShortArray {
+        val out = ShortArray(a.size + b.size)
+        a.copyInto(out)
+        b.copyInto(out, a.size)
+        return out
+    }
+
     fun release() {
         soundPool.release()
     }
 
-    private fun synthesizeAndLoad(note: Note, durationSec: Double): Int? =
+    private suspend fun synthesizeAndLoad(note: Note, durationSec: Double): Int? =
         withContext(Dispatchers.IO) {
             try {
                 val freq = Notes.frequency(note)
@@ -85,19 +136,26 @@ class AudioPlayer(context: Context) {
         fun synthesizeSine(freq: Double, durationSec: Double = 1.0): ShortArray {
             val n = (durationSec * SAMPLE_RATE).toInt()
             val out = ShortArray(n)
-            val attack = (0.01 * SAMPLE_RATE).toInt().coerceAtMost(n)
-            val release = (0.35 * SAMPLE_RATE).toInt().coerceAtMost(n - attack)
+            val attack = (0.02 * SAMPLE_RATE).toInt().coerceAtMost(n)
+            val decay = (0.10 * SAMPLE_RATE).toInt().coerceAtMost(n - attack)
+            val release = (0.15 * SAMPLE_RATE).toInt().coerceAtMost(n - attack - decay)
+            val sustainLevel = 0.85
+
             for (i in 0 until n) {
                 val t = i.toDouble() / SAMPLE_RATE
                 val s = sin(2 * PI * freq * t) +
-                        0.4 * sin(2 * PI * freq * 2 * t) +
-                        0.15 * sin(2 * PI * freq * 3 * t)
+                        0.35 * sin(2 * PI * freq * 2 * t) +
+                        0.12 * sin(2 * PI * freq * 3 * t)
                 val env = when {
-                    i < attack -> i.toDouble() / attack
-                    i > n - release -> ((n - i).toDouble() / release).coerceIn(0.0, 1.0)
-                    else -> 1.0
+                    i < attack -> (i.toDouble() / attack)
+                    i < attack + decay -> 1.0 - (1.0 - sustainLevel) * ((i - attack).toDouble() / decay)
+                    i > n - release -> {
+                        val relPos = (n - i).toDouble() / release
+                        sustainLevel * (0.5 * (1.0 - kotlin.math.cos(relPos * PI)))
+                    }
+                    else -> sustainLevel
                 }
-                val v = (s * env * 0.5 * Short.MAX_VALUE).toInt()
+                val v = (s * env * 0.45 * Short.MAX_VALUE).toInt()
                 out[i] = v.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
             }
             return out

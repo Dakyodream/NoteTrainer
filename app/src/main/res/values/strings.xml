@@ -1,4 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NoteTrainer</string>
+
+    <!-- Notation -->
+    <string name="notation_fr">♩ - fr (Do Ré Mi)</string>
+    <string name="notation_en">♩ - en (C D E)</string>
+    <string name="notation_title">Notation</string>
+
+    <!-- Thème -->
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="theme_system">Auto</string>
+
+    <!-- Modes : %1$s = nom de la note (La ou A) selon la notation choisie -->
+    <string name="mode_title_games">Mode de jeu</string>
+    <string name="mode_name">♩ ➜ %1$s</string>
+    <string name="mode_name_desc">Une note s\'affiche sur la partition, trouvez son nom.</string>
+    <string name="mode_place">%1$s ➜ ♩</string>
+    <string name="mode_place_desc">Un nom de note s\'affiche, placez-la sur la partition.</string>
+    <string name="mode_ear">🔊 ➜ %1$s</string>
+    <string name="mode_ear_desc">Écoutez le son et placez la note sur la partition.</string>
+
+    <!-- Difficultés -->
+    <string name="diff_easy">Facile</string>
+    <string name="diff_medium">Moyen</string>
+    <string name="diff_hard">Difficile</string>
+    <string name="diff_expert">Expert</string>
+    <string name="diff_title">Difficulté</string>
+    <string name="diff_easy_desc">Pas de dièses/bémols, 10 manches</string>
+    <string name="diff_medium_desc">Dièses/bémols possibles, 10 manches</string>
+    <string name="diff_hard_desc">12 manches, séquences plus longues</string>
+    <string name="diff_expert_desc">12 manches rapides, tout est permis</string>
+
+    <!-- Clé -->
+    <string name="clef_title">Clé</string>
+    <string name="clef_sol">Clé de Sol</string>
+    <string name="clef_fa">Clé de Fa</string>
+
+    <!-- Jeu -->
+    <string name="play">▶ Jouer</string>
+    <string name="quit">Quitter</string>
+    <string name="quit_confirm_title">Quitter la partie ?</string>
+    <string name="quit_confirm_body">Votre progression dans cette partie sera perdue.</string>
+    <string name="quit_yes">Quitter</string>
+    <string name="quit_no">Rester</string>
+    <string name="lives">❤️ %1$d</string>
+    <string name="round">Manche %1$d/%2$d</string>
+    <string name="score">⭐ %1$d</string>
+    <string name="next_note">Note suivante</string>
+    <string name="validate_answer">✅ Valider</string>
+    <string name="game_over">Partie terminée !</string>
+    <string name="game_over_time">Temps écoulé !</string>
+    <string name="time_bonus">+%1$.1f s</string>
+    <string name="replay">Rejouer</string>
+    <string name="menu">Menu</string>
+    <string name="final_score">Score : %1$d</string>
+    <string name="best_score">Meilleur score : %1$d</string>
+    <string name="new_best">✨ Nouveau record !</string>
+    <string name="sequence_progress">Séquence : %1$d/%2$d</string>
+    <string name="feedback_correct">✅ Bravo !</string>
+    <string name="feedback_wrong">❌ Dommage, c\'était %1$s</string>
+    <string name="mode_name_prompt">Quel est le nom de cette note ?</string>
+    <string name="mode_place_prompt">Placez la note : %1$s</string>
+    <string name="mode_ear_prompt">Écoutez puis placez la note</string>
+    <string name="mode_ear_listen">🔊 Réécouter</string>
+
+    <!-- Menu -->
+    <string name="help">ℹ️ Aide</string>
+    <string name="credits">👤 Crédits</string>
+    <string name="license">⚖️ Licence</string>
+    <string name="privacy">🔒 Confidentialité</string>
+    <string name="privacy_body">NoteTrainer est 100 % hors-ligne : aucune donnée n\'est collectée, transmise ou vendue. L\'application ne demande aucune permission Android.\n\nVos scores sont enregistrés uniquement sur votre appareil, dans le stockage privé de l\'application, et sont exclus des sauvegardes Android (adb, cloud, transfert d\'appareil).\n\nVos droits (RGPD) :\n• Exporter vos statistiques (bouton dans la page Statistiques)\n• Effacer toutes vos données (bouton dans la page Statistiques)\n\nDésinstaller l\'application supprime également toutes les données.\n\nCode source vérifiable : le projet est open source (MIT), le manifeste ne déclare aucune permission et aucune dépendance réseau n\'est présente.</string>
+    <string name="back">← Retour au menu</string>
+
+    <!-- Statistiques -->
+    <string name="stats_title">📊 Statistiques</string>
+    <string name="stats_week">Cette semaine</string>
+    <string name="stats_month">Ce mois</string>
+    <string name="stats_all">Depuis le début</string>
+    <string name="stats_games">%1$d parties</string>
+    <string name="stats_avg">Score moyen : %1$.1f</string>
+    <string name="stats_best">Meilleur score : %1$d</string>
+    <string name="stats_rounds">%1$d notes jouées</string>
+    <string name="stats_accuracy">Précision : %1$.0f %% (%2$d/%3$d)</string>
+    <string name="stats_diff_breakdown">Meilleurs scores par difficulté :</string>
+    <string name="stats_diff_score">%1$s : %2$d pt(s)</string>
+    <string name="stats_none">Aucune partie enregistrée pour l\'instant.\n\nJouez une partie complète pour voir vos progrès !</string>
+    <string name="guide_title">🎵 Guide des notes</string>
+    <string name="guide_subtitle">Touchez une note pour l\'écouter</string>
+    <string name="guide_c4_note">Repère : C4 = Do3 = do du milieu (midi 60)</string>
+    <string name="stats_offline">🔒 100 %% hors ligne : vos statistiques restent sur votre appareil, aucune donnée n\'est collectée.</string>
+    <string name="stats_export">📥 Exporter mes stats (JSON)</string>
+    <string name="stats_erase">🗑️ Effacer mes données</string>
+    <string name="stats_erase_confirm_title">Effacer toutes les données ?</string>
+    <string name="stats_erase_confirm_body">Toutes vos statistiques seront définitivement supprimées de votre appareil. Cette action est irréversible.</string>
+    <string name="stats_erase_yes">Effacer</string>
+    <string name="stats_erase_no">Annuler</string>
+    <string name="stats_per_mode">Par mode de jeu</string>
+
+    <!-- Aide -->
+    <string name="help_body">Trois modes de jeu, dans l\'esprit du Simon, pour mémoriser les notes.\n\n1. ♩ ➜ La : une note apparaît sur la partition (clé de Sol ou de Fa). Touchez le bouton portant son nom.\n\n2. La ➜ ♩ : le nom de la note s\'affiche avec son octave. Choisissez l\'altération (♭ ♮ ♯) puis touchez la bonne position sur la portée.\n\n3. 🔊 ➜ La : le jeu joue une séquence de notes. Écoutez, réécoutez si besoin, et placez chaque note dans l\'ordre.\n\nÉtendue : de 4 notes sous la première ligne à 4 notes au-dessus de la dernière ligne de la portée.\n\nAstuce : en clé de Sol, les lignes de bas en haut donnent Mi Sol Si Ré Fa, et les interlignes Fa La Do Mi.</string>
+
+    <!-- Crédits -->
+    <string name="credits_body">NoteTrainer — version 1.0.0\n\nProjet open source et gratuit, publié sous licence libre MIT.\n\nTechnologies :\n• Kotlin + Jetpack Compose (Material 3)\n• Rendu vectoriel natif Compose Canvas 100 %% sur mesure\n• Typographie musicale officielle Steinberg Bravura (licence SIL Open Font 1.1 — SMuFL)\n• Synthétiseur audio local PCM (AudioTrack / SoundPool)\n\nMerci de jouer, contribuer et partager !</string>
 </resources>

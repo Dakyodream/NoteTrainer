@@ -1,62 +1,62 @@
 # NoteTrainer 🎵
 
-**NoteTrainer** est un jeu Android **open source et gratuit** (licence MIT) pour apprendre à lire les notes sur une partition — dans l'esprit du jeu Simon. Pensé pour les apprenants pianistes qui veulent mémoriser le nom des notes et leur position en clé de Sol et de Fa.
+[![Android CI](https://github.com/Dakyodream/NoteTrainer/actions/workflows/android.yml/badge.svg)](https://github.com/Dakyodream/NoteTrainer/actions/workflows/android.yml)
+[![Licence: MIT](https://img.shields.io/badge/Licence-MIT-blue.svg)](LICENSE)
 
-## 🎮 Modes de jeu
+**NoteTrainer** is a **100% offline, free and open-source** Android application (MIT licence) designed for practising sight-reading musical notes on a stave. It is tailored for beginner to advanced piano students and music teachers who wish to track student progress over time.
 
-| Mode | Principe |
-|------|----------|
-| **Note ➜ Nom** | Une note s'affiche sur la partition (clé de Sol ou de Fa) ; trouvez son nom parmi les boutons proposés. |
-| **Nom ➜ Note** | Le nom de la note s'affiche (avec son octave) ; placez-la au bon endroit sur la portée. Choisissez l'altération (♭ ♮ ♯) puis touchez la partition. |
-| **Oreille ➜ Note** | Le jeu joue une séquence de notes (1 s par note, façon Simon) ; réécoutez puis placez chaque note sur la portée, dans l'ordre. |
+## 🎮 Game Modes
 
-## 🎚️ Difficultés
+| Mode | Description |
+|------|-------------|
+| **♩ ➜ Name** | A note is displayed on the stave (treble or bass clef); select its correct name from the choice buttons (C D E... or Do Ré Mi...). |
+| **Name ➜ ♩** | A note name is displayed alongside its octave (e.g. C4); pick an accidental (♭ ♮ ♯) and tap the correct position directly on the stave. |
+| **🔊 ➜ Name** | The app plays an audio sequence of notes (Simon-style memory game); listen, replay as needed, and place each note on the stave in the correct order. |
 
-- **Facile** — notes naturelles uniquement, 3 propositions, séquence de 3 notes.
-- **Moyen** — dièses/bémols possibles, séquence de 4 notes.
-- **Difficile** — 12 manches, séquence de 5 notes.
-- **Expert** — tout est permis, séquence de 6 notes.
+## 🎚️ Difficulties & Clefs
 
-Chaque partie se joue avec **3 vies** ; un score et le meilleur score sont affichés.
+- **Easy** — Natural notes only, 10 rounds.
+- **Medium** — Accidentals (sharps and flats) included, 10 rounds.
+- **Hard** — 12 rounds with longer note sequences.
+- **Expert** — 12 fast rounds covering extended staves and all accidentals.
+- **Supported Clefs** — Treble clef (G clef) and Bass clef (F clef).
+- **Notations** — English notation (A, B, C...) and French/Solfège notation (Do, Ré, Mi...).
 
-## 📱 Captures d'esprit du jeu
+## 📊 Statistics & Privacy (GDPR Compliance)
 
-- Menu principal : choix du mode, de la difficulté et de la clé (Sol / Fa).
-- Écrans **Aide**, **Crédits** et **Licence** accessibles depuis le menu.
-- Partition dessinée intégralement en **Jetpack Compose Canvas** (clé de Sol, clé de Fa, lignes supplémentaires, altérations).
+- **100% Offline** — Zero Android permissions required (no internet access, no external storage, no microphone).
+- **Local Progress Tracking** — Tracks games played, average scores, high scores, and accuracy breakdown per game mode and difficulty.
+- **GDPR Rights Built-in** — One-tap JSON export of all personal statistics and instant data deletion capability.
+- **Backup Exclusion** — Local stats data (`stats.json`) is explicitly excluded from Android cloud backups and device-to-device transfers to ensure data never leaves your device.
 
-## 🔊 Audio
+## 🔊 Local Audio Synthesis
 
-Les sons sont **synthétisés localement** (onde sinusoïdale + harmoniques + enveloppe, générée en WAV dans le cache de l'application) : aucun fichier audio embarqué, aucune dépendance réseau, aucune API payante. Le jeu fonctionne 100 % hors-ligne.
+All note sounds are **synthesised locally in real-time PCM** (`AudioTrack` / `SoundPool`). No large bundled audio files, network requests, or third-party paid APIs are used.
 
-## 🛠️ Compilation
+## 🛠️ Technical Stack
 
-1. Installez [Android Studio](https://developer.android.com/studio) (Koala ou plus récent).
-2. Ouvrez le dossier du projet : `File > Open` puis sélectionnez ce dépôt.
-3. Laissez Gradle synchroniser (le wrapper téléchargera Gradle 8.7 automatiquement).
-4. Branchez un appareil ou lancez un émulateur, puis `Run ▶`.
+- **Language & Framework**: Kotlin 2.2 + Jetpack Compose (Material 3)
+- **Stave Rendering**: 100% custom native vector graphics drawn via `Compose Canvas`, using the official Steinberg Bravura SMuFL music font
+- **SDK Compatibility**: `minSdk = 26` (Android 8.0+), `targetSdk = 35` (Android 15)
+- **Build System**: Gradle 9.x with Android Gradle Plugin (AGP) 9.x
 
-En ligne de commande :
+## 🧱 Building & Installation
 
+### Prerequisites
+- [Android Studio](https://developer.android.com/studio) (Ladybug / 2024.2+ recommended)
+- JDK 17+
+
+### Command Line Build
 ```bash
-./gradlew assembleDebug   # APK de debug dans app/build/outputs/apk/debug/
+# Build debug APK
+./gradlew :app:assembleDebug
+
+# Run unit tests
+./gradlew :app:testDebugUnitTest
 ```
 
-## 🧱 Stack technique
-
-- **Kotlin** 1.9, **Jetpack Compose** (BOM 2024.06) + **Material 3**
-- Architecture simple : `core` (logique de jeu, théorie musicale, synthèse audio) + `ui` (Compose)
-- minSdk 24 (Android 7.0+), targetSdk 34
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues (nouveaux modes, dessin des clés, statistiques d'apprentissage…). Ouvrez une issue ou une pull request.
+The compiled APK will be generated at `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## ⚖️ Licence
 
-Distribué sous licence [MIT](LICENSE). Projet gratuit, sans publicité et sans collecte de données.
-
-## 🙏 Remerciements
-
-- Communauté des apprenants pianistes 🎹
-- Documentation Android et exemples Compose
+Distributed under the [MIT Licence](LICENSE). Free, ad-free, and respects user privacy completely.

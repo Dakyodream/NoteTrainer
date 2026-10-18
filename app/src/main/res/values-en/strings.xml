@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NoteTrainer</string>
+
+    <string name="notation_fr">♩ - fr (Do Ré Mi)</string>
+    <string name="notation_en">♩ - en (C D E)</string>
+    <string name="notation_title">Notation</string>
+
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">Auto</string>
+
+    <string name="mode_title_games">Game mode</string>
+    <string name="mode_name">♩ ➜ %1$s</string>
+    <string name="mode_name_desc">A note appears on the staff, find its name.</string>
+    <string name="mode_place">%1$s ➜ ♩</string>
+    <string name="mode_place_desc">A note name is shown, place it on the staff.</string>
+    <string name="mode_ear">🔊 ➜ %1$s</string>
+    <string name="mode_ear_desc">Listen to the sound and place the note on the staff.</string>
+
+    <string name="diff_easy">Easy</string>
+    <string name="diff_medium">Medium</string>
+    <string name="diff_hard">Hard</string>
+    <string name="diff_expert">Expert</string>
+    <string name="diff_title">Difficulty</string>
+    <string name="diff_easy_desc">No sharps/flats, 10 rounds</string>
+    <string name="diff_medium_desc">Sharps/flats possible, 10 rounds</string>
+    <string name="diff_hard_desc">12 rounds, longer sequences</string>
+    <string name="diff_expert_desc">12 fast rounds, everything allowed</string>
+
+    <string name="clef_title">Clef</string>
+    <string name="clef_sol">Treble clef</string>
+    <string name="clef_fa">Bass clef</string>
+
+    <string name="play">▶ Play</string>
+    <string name="quit">Quit</string>
+    <string name="quit_confirm_title">Quit the game?</string>
+    <string name="quit_confirm_body">Your progress in this game will be lost.</string>
+    <string name="quit_yes">Quit</string>
+    <string name="quit_no">Stay</string>
+    <string name="lives">❤️ %1$d</string>
+    <string name="round">Round %1$d/%2$d</string>
+    <string name="score">⭐ %1$d</string>
+    <string name="next_note">Next note</string>
+    <string name="validate_answer">✅ Confirm</string>
+    <string name="game_over">Game over!</string>
+    <string name="game_over_time">Time\'s up!</string>
+    <string name="time_bonus">+%1$.1f s</string>
+    <string name="replay">Play again</string>
+    <string name="menu">Menu</string>
+    <string name="final_score">Score: %1$d</string>
+    <string name="best_score">Best score: %1$d</string>
+    <string name="new_best">✨ New best!</string>
+    <string name="sequence_progress">Sequence: %1$d/%2$d</string>
+    <string name="feedback_correct">✅ Well done!</string>
+    <string name="feedback_wrong">❌ Too bad, it was %1$s</string>
+    <string name="mode_name_prompt">What is the name of this note?</string>
+    <string name="mode_place_prompt">Place the note: %1$s</string>
+    <string name="mode_ear_prompt">Listen then place the note</string>
+    <string name="mode_ear_listen">🔊 Listen again</string>
+
+    <string name="help">ℹ️ Help</string>
+    <string name="credits">👤 Credits</string>
+    <string name="license">⚖️ License</string>
+    <string name="privacy">🔒 Privacy</string>
+    <string name="privacy_body">NoteTrainer is 100% offline: no data is collected, transmitted or sold. The app requests no Android permissions.\n\nYour scores are stored only on your device, in the app\'s private storage, and are excluded from Android backups (adb, cloud, device transfer).\n\nYour rights (GDPR):\n• Export your statistics (button in the Statistics page)\n• Erase all your data (button in the Statistics page)\n\nUninstalling the app also deletes all data.\n\nVerifiable open source: the project is open source (MIT), the manifest declares no permissions and no network dependency is present.</string>
+    <string name="back">← Back to menu</string>
+
+    <string name="stats_title">📊 Statistics</string>
+    <string name="stats_week">This week</string>
+    <string name="stats_month">This month</string>
+    <string name="stats_all">All time</string>
+    <string name="stats_games">%1$d games</string>
+    <string name="stats_avg">Average score: %1$.1f</string>
+    <string name="stats_best">Best score: %1$d</string>
+    <string name="stats_rounds">%1$d notes played</string>
+    <string name="stats_accuracy">Accuracy: %1$.0f %% (%2$d/%3$d)</string>
+    <string name="stats_diff_breakdown">Best scores by difficulty:</string>
+    <string name="stats_diff_score">%1$s: %2$d pt(s)</string>
+    <string name="stats_none">No game recorded yet.\n\nPlay a full game to see your progress!</string>
+    <string name="guide_title">🎵 Note Guide</string>
+    <string name="guide_subtitle">Tap a note to hear its sound</string>
+    <string name="guide_c4_note">Reference: C4 = Middle C (MIDI 60)</string>
+    <string name="stats_offline">🔒 100%% offline: your statistics stay on your device, no data collected.</string>
+    <string name="stats_export">📥 Export my stats (JSON)</string>
+    <string name="stats_erase">🗑️ Erase my data</string>
+    <string name="stats_erase_confirm_title">Erase all data?</string>
+    <string name="stats_erase_confirm_body">All your statistics will be permanently deleted from your device. This action cannot be undone.</string>
+    <string name="stats_erase_yes">Erase</string>
+    <string name="stats_erase_no">Cancel</string>
+    <string name="stats_per_mode">By game mode</string>
+
+    <string name="help_body">Three game modes, Simon-style, to memorize the notes.\n\n1. ♩ ➜ A: a note appears on the staff (treble or bass clef). Tap the button with its name.\n\n2. A ➜ ♩: the note name and octave are shown. Pick the accidental (♭ ♮ ♯) then tap the right position on the staff.\n\n3. 🔊 ➜ A: the game plays a sequence of notes. Listen, replay if needed, and place each note in order.\n\nRange: from 4 notes below the first line to 4 notes above the last line of the staff.\n\nTip: in treble clef, lines from bottom to top are E G B D F, and spaces are F A C E.</string>
+
+    <string name="credits_body">NoteTrainer — version 1.0.0\n\nFree and open source project, published under the MIT license.\n\nTechnologies:\n• Kotlin + Jetpack Compose (Material 3)\n• 100%% custom native Compose Canvas score renderer\n• Official Steinberg Bravura music font (SIL Open Font License 1.1 — SMuFL)\n• Local PCM audio synthesizer (AudioTrack / SoundPool)\n\nThanks for playing, contributing and sharing!</string>
+</resources>

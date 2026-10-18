@@ -1,186 +1,343 @@
 package com.dakyodream.notetrainer.ui
 
+import android.content.Context
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dakyodream.notetrainer.core.Clef
 import com.dakyodream.notetrainer.core.Note
-
-/** Conversion d'une note vers sa position verticale sur la portée.
- *  1 step = demi-interligne ; les lettres consécutives sont distantes d'1 step. */
-object StaffGeometry {
-    const val LINES = 5
-
-    /** Index diatonique de la ligne du haut : F5 en clé de Sol, A3 en clé de Fa. */
-    fun topLineDiatonic(clef: Clef): Int = when (clef) {
-        Clef.TREBLE -> 3 + 5 * 7  // F5
-        Clef.BASS -> 5 + 3 * 7   // A3
-    }
-
-    fun noteToStep(note: Note, clef: Clef): Float {
-        val letterIdx = when (note.letter) {
-            'C' -> 0; 'D' -> 1; 'E' -> 2; 'F' -> 3; 'G' -> 4; 'A' -> 5; 'B' -> 6
-            else -> 0
-        }
-        val diatonic = letterIdx + note.octave * 7
-        return (topLineDiatonic(clef) - diatonic).toFloat()
-    }
-}
+import com.dakyodream.notetrainer.core.Notes
+import kotlin.math.roundToInt
 
 data class StaffNote(
     val note: Note,
-    val color: Color = Color.Black,
-    val showLabel: Boolean = false,
-    val accidentalSymbol: String? = null
+    val color: Color = Color(0xFF1B1B1B)
 )
+
+data class StaffHitResult(val step: Int, val accidental: Int)
+
+// Symboles musicaux SMuFL (Bravura Font)
+private const val SMUFL_CLEF_TREBLE = "\uE050"  // gClef
+private const val SMUFL_CLEF_BASS = "\uE062"    // fClef
+private const val SMUFL_NOTEHEAD_BLACK = "\uE0A4" // noteheadBlack
+private const val SMUFL_ACCIDENTAL_SHARP = "\uE260"
+private const val SMUFL_ACCIDENTAL_NATURAL = "\uE261"
+private const val SMUFL_ACCIDENTAL_FLAT = "\uE262"
+
+private var bravuraTypeface: Typeface? = null
+
+private fun getBravuraTypeface(context: Context): Typeface {
+    if (bravuraTypeface == null) {
+        bravuraTypeface = Typeface.createFromAsset(context.assets, "Bravura.otf")
+    }
+    return bravuraTypeface!!
+}
+
+/**
+ * Calcule l'index diatonique d'une note (0 pour C0, 7 pour C1, etc.).
+ */
+private fun Note.diatonicIndex(): Int {
+    val letterIdx = when (letter) {
+        'C' -> 0; 'D' -> 1; 'E' -> 2; 'F' -> 3; 'G' -> 4; 'A' -> 5; 'B' -> 6
+        else -> 0
+    }
+    return letterIdx + octave * 7
+}
+
+/**
+ * Calcule le step (demi-interligne) d'une note selon la clé.
+ * step 0 = ligne du haut (F5 en Sol, A3 en Fa)
+ * step 4 = ligne du milieu (B4 en Sol, D3 en Fa)
+ * step 8 = ligne du bas (E4 en Sol, G2 en Fa)
+ */
+fun noteToStep(note: Note, clef: Clef): Int {
+    val topDiatonic = Notes.topLineDiatonic(clef)
+    val noteDiatonic = note.diatonicIndex()
+    return topDiatonic - noteDiatonic
+}
 
 @Composable
 fun StaffView(
     clef: Clef,
     notes: List<StaffNote>,
     modifier: Modifier = Modifier,
-    selectedStepY: Float? = null,
-    onStepTap: ((Float) -> Unit)? = null
+    inkColor: Color = Color(0xFF1B1B1B),
+    heightDp: Dp = 260.dp,
+    draftStep: Int? = null,
+    draftAccidental: Int = 0,
+    showGuideLedgerLines: Boolean = true,
+    onStaffTap: ((StaffHitResult) -> Unit)? = null
 ) {
-    val lineColor = Color(0xFF444444)
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val typeface = remember(context) { getBravuraTypeface(context) }
+    val primaryHighlightColor = MaterialTheme.colorScheme.primary
 
-    Canvas(
+    var activeHoverStep by remember { mutableStateOf<Int?>(null) }
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(240.dp)
-            .pointerInput(clef, onStepTap) {
-                if (onStepTap != null) {
-                    detectTapGestures { offset ->
-                        val unit = size.height / 16f
-                        val topLineY = size.height / 2f - 2f * unit
-                        onStepTap((topLineY - offset.y) / unit)
+            .height(heightDp)
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(heightDp)
+                .let { m ->
+                    if (onStaffTap != null) {
+                        m.pointerInput(clef, heightDp) {
+                            val centerY = size.height / 2f
+                            val spaceHeight = with(density) { 22.dp.toPx() }
+                            val stepSize = spaceHeight / 2f
+
+                            detectTapGestures { offset ->
+                                val rawStep = ((offset.y - centerY) / stepSize + 4f).roundToInt()
+                                val clampedStep = rawStep.coerceIn(Notes.RANGE_MIN_STEP, Notes.RANGE_MAX_STEP)
+                                onStaffTap(StaffHitResult(step = clampedStep, accidental = 0))
+                            }
+                        }.pointerInput(clef, heightDp) {
+                            val centerY = size.height / 2f
+                            val spaceHeight = with(density) { 22.dp.toPx() }
+                            val stepSize = spaceHeight / 2f
+
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    val rawStep = ((offset.y - centerY) / stepSize + 4f).roundToInt()
+                                    activeHoverStep = rawStep.coerceIn(Notes.RANGE_MIN_STEP, Notes.RANGE_MAX_STEP)
+                                },
+                                onDrag = { change, _ ->
+                                    change.consume()
+                                    val rawStep = ((change.position.y - centerY) / stepSize + 4f).roundToInt()
+                                    activeHoverStep = rawStep.coerceIn(Notes.RANGE_MIN_STEP, Notes.RANGE_MAX_STEP)
+                                },
+                                onDragEnd = {
+                                    val finalStep = activeHoverStep
+                                    activeHoverStep = null
+                                    finalStep?.let { step ->
+                                        onStaffTap(StaffHitResult(step = step, accidental = 0))
+                                    }
+                                },
+                                onDragCancel = {
+                                    activeHoverStep = null
+                                }
+                            )
+                        }
+                    } else m
+                }
+        ) {
+            val width = size.width
+            val height = size.height
+            val centerY = height / 2f
+
+            // 1 interligne = 22dp. En SMuFL, la taille de police = 4 x interligne
+            val spaceHeight = 22.dp.toPx()
+            val stepSize = spaceHeight / 2f
+            val lineThickness = 2.dp.toPx()
+            val fontSizePx = spaceHeight * 4f
+
+            val musicPaint = Paint().apply {
+                this.typeface = typeface
+                this.textSize = fontSizePx
+                this.color = inkColor.toArgb()
+                this.isAntiAlias = true
+            }
+
+            // 1. Lignes supplémentaires de repère (guide ledger lines) en filigrane clair
+            if (showGuideLedgerLines) {
+                val guideSteps = listOf(-4, -2, 10, 12)
+                val guideWidth = spaceHeight * 2.2f
+                val guideX = width / 2f
+                val guideColor = inkColor.copy(alpha = 0.22f)
+                guideSteps.forEach { gStep ->
+                    val gy = centerY + (gStep - 4) * stepSize
+                    drawLine(
+                        color = guideColor,
+                        start = Offset(guideX - guideWidth / 2f, gy),
+                        end = Offset(guideX + guideWidth / 2f, gy),
+                        strokeWidth = 1.2.dp.toPx()
+                    )
+                }
+            }
+
+            // 2. Dessin des 5 lignes principales de la portée de bord à bord (x: 0 -> width)
+            val staffLinesSteps = listOf(0, 2, 4, 6, 8)
+            staffLinesSteps.forEach { s ->
+                val lineY = centerY + (s - 4) * stepSize
+                drawLine(
+                    color = inkColor,
+                    start = Offset(0f, lineY),
+                    end = Offset(width, lineY),
+                    strokeWidth = lineThickness
+                )
+            }
+
+            // 3. Dessin de la Clé (Sol / Fa) en typographie SMuFL Bravura
+            val clefX = 20.dp.toPx()
+            if (clef == Clef.TREBLE) {
+                val solY = centerY + (6 - 4) * stepSize
+                drawContext.canvas.nativeCanvas.drawText(
+                    SMUFL_CLEF_TREBLE,
+                    clefX,
+                    solY,
+                    musicPaint
+                )
+            } else {
+                val faY = centerY + (2 - 4) * stepSize
+                drawContext.canvas.nativeCanvas.drawText(
+                    SMUFL_CLEF_BASS,
+                    clefX,
+                    faY,
+                    musicPaint
+                )
+            }
+
+            val effectiveDraftStep = activeHoverStep ?: draftStep
+
+            // 4. Surlignage "sous le doigt" (hover highlight) si un step est sélectionné/survolé
+            if (effectiveDraftStep != null) {
+                val draftY = centerY + (effectiveDraftStep - 4) * stepSize
+                val highlightHeight = spaceHeight * 0.95f
+                val highlightWidth = spaceHeight * 3.5f
+                drawRoundRect(
+                    color = primaryHighlightColor.copy(alpha = 0.25f),
+                    topLeft = Offset(width / 2f - highlightWidth / 2f, draftY - highlightHeight / 2f),
+                    size = Size(highlightWidth, highlightHeight),
+                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+                )
+            }
+
+            // 5. Dessin des notes réelles ou de la note en cours de survol/placement (draft)
+            val renderNotes = if (notes.isNotEmpty()) notes else if (effectiveDraftStep != null) {
+                val draftMidi = Notes.stepToMidi(effectiveDraftStep, clef) + draftAccidental
+                val draftNote = Notes.fromMidi(draftMidi, preferSharps = draftAccidental >= 0)
+                listOf(StaffNote(draftNote, color = primaryHighlightColor))
+            } else emptyList()
+
+            if (renderNotes.isNotEmpty()) {
+                val getNoteX: (Int) -> Float = { index ->
+                    when (renderNotes.size) {
+                        1 -> width / 2f
+                        2 -> if (index == 0) width / 2f - 24.dp.toPx() else width / 2f + 24.dp.toPx()
+                        else -> {
+                            val startX = 90.dp.toPx()
+                            val availableWidth = width - startX - 28.dp.toPx()
+                            val spacing = (availableWidth / (renderNotes.size - 1).coerceAtLeast(1)).coerceAtMost(65.dp.toPx())
+                            startX + index * spacing
+                        }
+                    }
+                }
+
+                renderNotes.forEachIndexed { index, staffNote ->
+                    val noteX = getNoteX(index)
+                    val step = noteToStep(staffNote.note, clef)
+                    val noteY = centerY + (step - 4) * stepSize
+
+                    val notePaint = Paint(musicPaint).apply {
+                        color = staffNote.color.toArgb()
+                    }
+
+                    // Lignes supplémentaires actives
+                    val ledgerWidth = spaceHeight * 1.8f
+                    val ledgerThickness = 2.dp.toPx()
+
+                    if (step > 8) {
+                        var lStep = 10
+                        while (lStep <= step) {
+                            val ly = centerY + (lStep - 4) * stepSize
+                            drawLine(
+                                color = staffNote.color,
+                                start = Offset(noteX - ledgerWidth / 2f, ly),
+                                end = Offset(noteX + ledgerWidth / 2f, ly),
+                                strokeWidth = ledgerThickness
+                            )
+                            lStep += 2
+                        }
+                    } else if (step < 0) {
+                        var lStep = -2
+                        while (lStep >= step) {
+                            val ly = centerY + (lStep - 4) * stepSize
+                            drawLine(
+                                color = staffNote.color,
+                                start = Offset(noteX - ledgerWidth / 2f, ly),
+                                end = Offset(noteX + ledgerWidth / 2f, ly),
+                                strokeWidth = ledgerThickness
+                            )
+                            lStep -= 2
+                        }
+                    }
+
+                    // Tête de note SMuFL
+                    val bounds = Rect()
+                    notePaint.getTextBounds(SMUFL_NOTEHEAD_BLACK, 0, 1, bounds)
+                    val noteheadWidth = notePaint.measureText(SMUFL_NOTEHEAD_BLACK)
+
+                    drawContext.canvas.nativeCanvas.drawText(
+                        SMUFL_NOTEHEAD_BLACK,
+                        noteX - noteheadWidth / 2f,
+                        noteY,
+                        notePaint
+                    )
+
+                    // Hampe (Stem)
+                    val stemLength = spaceHeight * 3.5f
+                    val stemThickness = 2.2.dp.toPx()
+
+                    if (step >= 4) {
+                        val stemX = noteX + noteheadWidth * 0.42f
+                        drawLine(
+                            color = staffNote.color,
+                            start = Offset(stemX, noteY),
+                            end = Offset(stemX, noteY - stemLength),
+                            strokeWidth = stemThickness
+                        )
+                    } else {
+                        val stemX = noteX - noteheadWidth * 0.42f
+                        drawLine(
+                            color = staffNote.color,
+                            start = Offset(stemX, noteY),
+                            end = Offset(stemX, noteY + stemLength),
+                            strokeWidth = stemThickness
+                        )
+                    }
+
+                    // Altération (♭, ♯, ♮)
+                    if (staffNote.note.accidental != 0) {
+                        val accGlyph = when (staffNote.note.accidental) {
+                            1 -> SMUFL_ACCIDENTAL_SHARP
+                            -1 -> SMUFL_ACCIDENTAL_FLAT
+                            else -> SMUFL_ACCIDENTAL_NATURAL
+                        }
+                        val accWidth = notePaint.measureText(accGlyph)
+                        drawContext.canvas.nativeCanvas.drawText(
+                            accGlyph,
+                            noteX - noteheadWidth / 2f - accWidth - 6.dp.toPx(),
+                            noteY,
+                            notePaint
+                        )
                     }
                 }
             }
-    ) {
-        val w = size.width
-        val h = size.height
-        val unit = h / 16f
-        val topLineY = h / 2f - 2f * unit
-
-        fun stepToY(step: Float): Float = topLineY - step * unit
-
-        drawStaff(w, topLineY, unit, lineColor)
-        drawClef(clef, topLineY, unit)
-
-        notes.forEach { sn ->
-            val y = stepToY(StaffGeometry.noteToStep(sn.note, clef))
-            val x = w * 0.62f
-            drawNoteHead(x, y, sn.color)
-            drawLedgerLinesIfNeeded(x, y, topLineY, unit, lineColor)
-            sn.accidentalSymbol?.let { sym ->
-                drawAccidentalSym(x - 2.2f * unit, y, unit, sym, sn.color)
-            }
-            if (sn.showLabel) {
-                drawNoteLabel(x, y, unit, sn.note.displayName)
-            }
         }
     }
-}
-
-private fun DrawScope.drawStaff(w: Float, topLineY: Float, unit: Float, color: Color) {
-    for (i in 0 until 5) {
-        drawLine(
-            color = color,
-            start = Offset(0f, topLineY + i * unit),
-            end = Offset(w, topLineY + i * unit),
-            strokeWidth = 2f
-        )
-    }
-}
-
-private fun DrawScope.drawNoteHead(cx: Float, cy: Float, color: Color) {
-    drawCircle(color = color, radius = 11f, center = Offset(cx, cy))
-    drawLine(
-        color = color,
-        start = Offset(cx + 10f, cy - 2f),
-        end = Offset(cx + 10f, cy - 38f),
-        strokeWidth = 3f,
-        cap = StrokeCap.Round
-    )
-}
-
-private fun DrawScope.drawLedgerLinesIfNeeded(cx: Float, y: Float, topLineY: Float, unit: Float, color: Color) {
-    if (y < topLineY) {
-        var lineY = topLineY - unit
-        while (lineY >= y + 1f) {
-            drawLine(color, Offset(cx - 20f, lineY), Offset(cx + 22f, lineY), 2f)
-            lineY -= unit
-        }
-    }
-    val bottomLineY = topLineY + 4f * unit
-    if (y > bottomLineY) {
-        var lineY = bottomLineY + unit
-        while (lineY <= y - 1f) {
-            drawLine(color, Offset(cx - 20f, lineY), Offset(cx + 22f, lineY), 2f)
-            lineY += unit
-        }
-    }
-}
-
-private fun DrawScope.drawClef(clef: Clef, topLineY: Float, unit: Float) {
-    when (clef) {
-        Clef.TREBLE -> drawTrebleClef(60f, topLineY, unit)
-        Clef.BASS -> drawBassClef(60f, topLineY, unit)
-    }
-}
-
-private fun DrawScope.drawTrebleClef(x: Float, topLineY: Float, unit: Float) {
-    val color = Color(0xFF1B1B1B)
-    val path = Path().apply {
-        cubicTo(x - unit * 0.8f, topLineY - unit * 3f, x + unit * 1.6f, topLineY + unit * 1f, x - unit * 0.4f, topLineY + unit * 5f)
-        cubicTo(x - unit * 1.4f, topLineY + unit * 6f, x + unit * 1.2f, topLineY + unit * 7f, x + unit * 0.4f, topLineY + unit * 4.5f)
-        cubicTo(x + unit * 1.8f, topLineY + unit * 2.5f, x - unit * 1.5f, topLineY + unit * 1.5f, x - unit * 0.6f, topLineY - unit * 1.5f)
-        cubicTo(x - unit * 1.2f, topLineY - unit * 3.5f, x + unit * 1.4f, topLineY - unit * 3.2f, x + unit * 0.6f, topLineY - unit * 1.2f)
-    }
-    drawPath(path, color, style = Stroke(width = 4f, cap = StrokeCap.Round))
-    drawCircle(color, radius = unit * 0.4f, center = Offset(x - unit * 0.5f, topLineY + unit * 4.2f))
-    drawLine(color, Offset(x + unit * 0.4f, topLineY - unit * 1.2f), Offset(x + unit * 1.3f, topLineY - unit * 2.6f), 3f)
-}
-
-private fun DrawScope.drawBassClef(x: Float, topLineY: Float, unit: Float) {
-    val color = Color(0xFF1B1B1B)
-    drawArc(
-        color = color,
-        startAngle = 250f,
-        sweepAngle = 230f,
-        useCenter = false,
-        topLeft = Offset(x - unit * 1.1f, topLineY + unit * 0.5f),
-        size = androidx.compose.ui.geometry.Size(unit * 2.2f, unit * 3.4f),
-        style = Stroke(width = 5f, cap = StrokeCap.Round)
-    )
-    drawCircle(color, radius = unit * 0.28f, center = Offset(x + unit * 0.9f, topLineY + unit * 1.7f))
-    drawCircle(color, radius = unit * 0.28f, center = Offset(x + unit * 0.9f, topLineY + unit * 2.6f))
-}
-
-private fun DrawScope.drawAccidentalSym(x: Float, y: Float, unit: Float, symbol: String, color: Color) {
-    if (symbol.contains("♯")) {
-        drawLine(color, Offset(x, y - unit), Offset(x, y + unit), 5f)
-        drawLine(color, Offset(x - unit * 0.6f, y - unit * 0.25f), Offset(x + unit * 0.6f, y - unit * 0.25f), 3f)
-        drawLine(color, Offset(x - unit * 0.6f, y + unit * 0.35f), Offset(x + unit * 0.6f, y + unit * 0.35f), 3f)
-    } else if (symbol.contains("♭")) {
-        drawLine(color, Offset(x, y - unit), Offset(x, y + unit * 0.3f), 4f)
-        drawArc(color, 200f, 200f, false, Offset(x - unit * 0.4f, y - unit * 0.2f),
-            androidx.compose.ui.geometry.Size(unit * 0.8f, unit * 1.0f), style = Stroke(4f))
-    }
-}
-
-private fun DrawScope.drawNoteLabel(x: Float, y: Float, unit: Float, text: String) {
-    drawLine(Color(0xFF888888), Offset(x - 20f, y + unit * 2.6f), Offset(x + 30f, y + unit * 2.6f), 1f)
 }
